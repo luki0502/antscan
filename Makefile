@@ -3,7 +3,7 @@ CPPFLAGS += -D_GNU_SOURCE
 
 DIALECT = -std=c18
 CFLAGS += $(DIALECT) -od -g -W -D_DEFAULT_SOURCE -Wall -fno-common -Wmissing-declarations
-LIBS = -lm -lrsvisa -lwebsockets -luv -ljson-c
+LIBS = -lm -lrsvisa -lwebsockets -luv -ljson-c -lpthread
 LDFLAGS =
 
 all: antscan

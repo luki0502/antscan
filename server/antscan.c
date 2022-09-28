@@ -3,25 +3,21 @@
 #include "receiver.h"
 #include "loop.h"
 
-#include "stdio.h"
-#include "stdint.h"
-#include "stdlib.h"
-#include "time.h"
-#include "string.h"
-#include "unistd.h"
-#include "sys/socket.h"
-#include "arpa/inet.h"
-#include "help.h"
 #include <libwebsockets.h>
 #include <json-c/json.h>
+#include <uv.h>
+#include <string.h>
 #include <getopt.h>
 #include <syslog.h>
 #include <sys/ioctl.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <errno.h>
+#include <arpa/inet.h>
 #include <netinet/in.h>
+#include "help.h"
 
-static void app_message(const char *msg, app_msg_type_e type);
-static void app_status();
-static void app_measurement_point(int az, int el, int freq, double val);
 static error_t parse_opt(int key, char *arg, struct argp_state *state);
 const char *argp_program_version = "C Websocket Server Example";
 const char args_doc[] = "args doc";
@@ -34,15 +30,20 @@ static int uid = -1, gid = -1, num_clients = 0;
 static char ws_ip[20] = WS_DEFAULT_IP;
 static struct sockaddr_in ws_in;
 
-static struct lws_context *context;
+struct lws_context *context;
 static struct lws_context_creation_info info;
 static unsigned char wsbuffer[WSBUFFERSIZE];
 static unsigned char *pwsbuffer = wsbuffer;
 static int wsbuffer_len = 0;
 scan_status_e scan_status;
+uv_mutex_t lock_pause_measurement;
+uv_cond_t cond_resume_measurement;
+bool measurement_thread_exit = false;
+bool measurement_thread_pause = false;
+uv_thread_t measurement_thread;
 
 int start_f, stop_f, measure_f[5], freq_counter = 0;
-char file_name[25], change[5];
+char file_name[25];
 uint16_t start_azimut, stop_azimut, n;
 int16_t start_elev, stop_elev, resolution_elev, m, azimut_sector, resolution_azimut;
 double reference_gain = 0;
@@ -68,6 +69,23 @@ struct per_vhost_data
     const struct lws_protocols *protocol;
     struct per_session_data *pss_list; // linked-list of live pss
 };
+
+/**
+ * Set affinity of calling thread to specific core on a multi-core CPU
+ */
+int thread_to_core(int core_id)
+{
+    int num_cores = sysconf(_SC_NPROCESSORS_ONLN);
+    if (core_id < 0 || core_id >= num_cores)
+        return EINVAL;
+
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+    CPU_SET(core_id, &cpuset);
+
+    pthread_t current_thread = pthread_self();
+    return pthread_setaffinity_np(current_thread, sizeof(cpu_set_t), &cpuset);
+}
 
 /**
  * Parse json array and output content
@@ -133,39 +151,68 @@ static void handle_client_request(void *in, size_t len)
             if(freq == NULL)
             {
                 app_message("Malloc error", MSG_DANGER);
-                lws_service(context, 100);
+                lws_service(context, 0);
                 clean_exit(freq, freq_counter);
                 exit(EXIT_FAILURE);
             }
             init_receiver(start_f, stop_f);
-
+            file_init();
             app_message("Receiver calibrated. Change antenna", MSG_SUCCESS);
-            lws_service(context, 100);
+            lws_service(context, 0);
             scan_status = CALIBRATED;
             app_status();
             break;
         case SERVER_CMD_SCAN_START: //start measurement loop
+            /* Start scan only if reference antenna is already calibrated */
+            if (scan_status == CALIBRATED)
+            {
+                measurement_thread_pause = false;
+                uv_thread_create(&measurement_thread, measurement_loop, NULL);
+            }
+            else
+            {
+                app_message("Reference antenna not calibrated.", MSG_DANGER);
+                lws_service(context, 0);
+            }
             app_message("Mesaurement started", MSG_SUCCESS);
-            lws_service(context, 100);
+            lws_service(context, 0);
             scan_status = RUNNING;
             app_status();
             break;
         case SERVER_CMD_SCAN_PAUSE: //pause measurement loop
-            if(scan_status == RUNNING) {
-                app_message("Measurement paused", MSG_WARNING);
-                lws_service(context, 100);
+            if (scan_status == RUNNING)
+            {
+                /* Measurement running, try pause */
+                uv_mutex_lock(&lock_pause_measurement);
+                measurement_thread_pause = true;
+                uv_mutex_unlock(&lock_pause_measurement);
+                app_message("Measurement conitnued", MSG_SUCCESS);
+                lws_service(context, 0);
                 scan_status = PAUSED;
                 app_status();
-            } else if(scan_status == PAUSED) {
-                app_message("Measurement conitnued", MSG_SUCCESS);
-                lws_service(context, 100);
+            }
+            else
+            {
+                /* Measurement paused, try running */
+                uv_mutex_lock(&lock_pause_measurement);
+                measurement_thread_pause = false;
+                uv_cond_broadcast(&cond_resume_measurement);
+                uv_mutex_unlock(&lock_pause_measurement);
+                app_message("Measurement paused", MSG_WARNING);
+                lws_service(context, 0);
                 scan_status = RUNNING;
                 app_status();
             }
             break;
         case SERVER_CMD_SCAN_STOP: //stop measurement loop
+            uv_mutex_lock(&lock_pause_measurement);
+            measurement_thread_pause = false;
+            uv_cond_broadcast(&cond_resume_measurement);
+            uv_mutex_unlock(&lock_pause_measurement);
+            measurement_thread_exit = true;
+            uv_thread_join(&measurement_thread);
             app_message("Measurement stoped", MSG_DANGER);
-            lws_service(context, 100);
+            lws_service(context, 0);
             scan_status = STOPPED;
             app_status();
             break;
@@ -173,7 +220,7 @@ static void handle_client_request(void *in, size_t len)
             jvalue = json_object_array_get_idx(jarr, 1);
             type = json_object_get_type(jvalue);
             if(type == json_type_int) {
-                //set_pan_position((int)json_object_get_int(jvalue));
+                set_pan_position((int)json_object_get_int(jvalue));
                 app_message("Setting PAN Position", MSG_SUCCESS);
             } else {
                 app_message("Wrong input", MSG_DANGER);
@@ -183,18 +230,18 @@ static void handle_client_request(void *in, size_t len)
             jvalue = json_object_array_get_idx(jarr, 1);
             type = json_object_get_type(jvalue);
             if(type == json_type_int) {
-                //set_tilt_position((int)json_object_get_int(jvalue));
+                set_tilt_position((int)json_object_get_int(jvalue));
                 app_message("Setting TILT Position", MSG_SUCCESS);
             } else {
                 app_message("Wrong input", MSG_DANGER);
             }
             break;
         case SERVER_CMD_CALIBRATE_PT: //self-check
-            //self_check();
+            self_check();
             app_message("Self-Check", MSG_SUCCESS);
             break;
         case SERVER_CMD_SET_HOME: //home
-            //home();
+            home();
             app_message("Home Position", MSG_SUCCESS);
             break;
         case SERVER_CMD_STATUS: 
@@ -335,7 +382,7 @@ static struct lws_protocols protocols[] = {
 /**
  * Forward status to web application.
  */
-static void app_status()
+void app_status()
 {
     size_t len = 0;
     json_object *jobj = json_object_new_object();
@@ -350,7 +397,7 @@ static void app_status()
 /**
  * Forward measurement point to web application.
  */
-static void app_measurement_point(int az, int el, int freq, double val)
+void app_measurement_point(int az, int el, int freq, double val)
 {
     size_t len = 0;
     json_object *jobj = json_object_new_object();
@@ -372,7 +419,7 @@ static void app_measurement_point(int az, int el, int freq, double val)
 /**
  * Forward message to web application.
  */
-static void app_message(const char *msg, app_msg_type_e type)
+void app_message(const char *msg, app_msg_type_e type)
 {
     size_t len = 0;
     /* Creat json root object */

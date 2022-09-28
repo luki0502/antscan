@@ -1,21 +1,27 @@
 #include "loop.h"
 #include "stdint.h"
+#include "uv.h"
+#include <stdbool.h>
+#include <libwebsockets.h>
 #include "antscan.h"
 #include "time.h"
 #include "head.h"
 #include "receiver.h"
 
-extern int start_f;
-extern int stop_f;
+extern int start_f, stop_f, freq_counter;
 extern int measure_f[5];
 extern char file_name[25];
 extern uint16_t start_azimut, stop_azimut, n;
 extern int16_t start_elev, stop_elev, resolution_elev, m, azimut_sector, resolution_azimut;
 extern double reference_gain;
-extern int freq_counter;
 extern Frequency* freq;
 time_t now;
 struct tm* t;
+extern uv_mutex_t lock_pause_measurement;
+extern uv_cond_t cond_resume_measurement;
+extern bool measurement_thread_exit, measurement_thread_pause;
+extern scan_status_e scan_status;
+extern struct lws_context *context;
 
 void file_init()
 {
@@ -66,6 +72,7 @@ void file_init()
 
 void measurement_loop()
 {
+    thread_to_core(2);
     for(m = start_elev; m <= stop_elev; m += resolution_elev)
     {
             set_tilt_position(m);
@@ -78,7 +85,22 @@ void measurement_loop()
                 set_pan_position(start_azimut + n);
                 for(int d = 0; d < freq_counter; d++)
                 {
-                    fprintf(freq[d].file_stream, "%.01lf;", measure(freq[d].frequency) + reference_gain);
+                    double val = measure(freq[d].frequency) + reference_gain;
+                    fprintf(freq[d].file_stream, "%.01lf;", val);
+
+                    uv_mutex_lock(&lock_pause_measurement);
+                    while (measurement_thread_pause != false)
+                    {
+                        uv_cond_wait(&cond_resume_measurement, &lock_pause_measurement);
+                    }
+                    uv_mutex_unlock(&lock_pause_measurement);
+                    app_measurement_point(n, m, freq[d].frequency, val);
+                    uv_sleep(500);
+                    if (measurement_thread_exit)
+                    {
+                        /* Measurement has been canceled */
+                        break;
+                    }
                 }
             }
             for(int e = 0; e < freq_counter; e++)
@@ -86,5 +108,17 @@ void measurement_loop()
                 fputs("\n", freq[e].file_stream);
                 fflush(freq[e].file_stream);
             }
+            if (measurement_thread_exit)
+            {
+                /* Measurement has been canceled */
+                break;
+            }
     }
+    scan_status = STOPPED;
+    measurement_thread_exit = false;
+    app_message("Scan process finished.", MSG_SUCCESS);
+    /* Kick out app message immediately */
+    lws_service(context, 0);
+    /* App status is kicked via main loop */
+    app_status();
 }
