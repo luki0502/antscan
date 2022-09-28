@@ -1,0 +1,29 @@
+{
+  "lang": "en",
+  "dir": "ltr",
+  "name": "Antenna Scan",
+  "description": "Antenna Scan",
+  "short_name": "wsex",
+  "scope": "/",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "white",
+  "theme_color": "white",
+"icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "48x48"
+    },
+        {
+      "src": "images/icon192.ico",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "images/icon256.ico",
+      "sizes": "256x256",
+      "purpose": "any maskable"
+    }
+  ]
+}

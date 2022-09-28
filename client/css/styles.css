@@ -1,0 +1,58 @@
+.toast {
+    --bs-toast-spacing: 0.5rem;
+}
+
+.toast-container {
+    max-width: fit-content;
+    z-index: 2000;
+}
+
+.toast_effects_open {
+    opacity: 0;
+    -webkit-transform: translate(50%);
+    -ms-transform: translate(50%);
+    transform: translate(50%);
+    -webkit-animation: toast_anim_in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    animation: toast_anim_in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    -webkit-animation-fill-mode: forwards;
+    animation-fill-mode: forwards;
+}
+
+.toast_effects_close {
+    -webkit-animation: toast_anim_out 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    animation: toast_anim_out 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    -webkit-animation-fill-mode: forwards;
+    animation-fill-mode: forwards;
+}
+
+@-webkit-keyframes toast_anim_in {
+    100% {
+        -webkit-transform: translate(0);
+        transform: translate(0);
+        opacity: 1;
+    }
+}
+
+@keyframes toast_anim_in {
+    100% {
+        -webkit-transform: translate(0);
+        transform: translate(0);
+        opacity: 1;
+    }
+}
+
+@-webkit-keyframes toast_anim_out {
+    100% {
+        -webkit-transform: translate(50%);
+        transform: translate(50%);
+        opacity: 0;
+    }
+}
+
+@keyframes toast_anim_out {
+    100% {
+        -webkit-transform: translate(50%);
+        transform: translate(50%);
+        opacity: 0;
+    }
+}

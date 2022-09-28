@@ -5,21 +5,23 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Antenna Scan</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+    <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="./css/styles.css" />
+    <script
+        type="text/javascript"
+        src="./scripts/vendors/bootstrap.bundle.min.js"
+    ></script>
+    <script type="text/javascript" src="./scripts/index.js"></script>    
 </head>
 
 <body>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8"
-        crossorigin="anonymous"></script>
-
     <div class="container-sm text-center">
         <h1>Data input</h1>
         <div class="input-group mb-3">
-            <span class="input-group-text" id="inputFilename">Filename</span>
-            <input type="text" class="form-control" aria-label="Filename" aria-describedby="inputFilename">
-            <span class="input-group-text" id="inputFilename">.csv</span>
+            <span class="input-group-text">Filename</span>
+            <input type="text" class="form-control" id="inputFilename" maxlength="25" aria-label="Filename" aria-describedby="inputFilename">
+            <span class="input-group-text">.csv</span>
         </div>
 
         <div class="row">
@@ -29,17 +31,17 @@
 
         <div class="row">
             <div class="input-group mb-3 col">
-                <span class="input-group-text" id="inputAzimutAngle">Azimut angle</span>
-                <input type="number" class="form-control" min="0" max="360" step="1" aria-label="azimutAngle"
-                    aria-describedby="inputAzimutAngle">
-                <span class="input-group-text" id="inputAzimutAngle">°</span>
+                <span class="input-group-text">Azimut angle</span>
+                <input type="number" class="form-control" id="inputAzimutAngle" min="0" max="360" step="1" aria-label="azimutAngle"
+                    aria-describedby="inputAzimutAngle" placeholder="[0 - 360]">
+                <span class="input-group-text">°</span>
             </div>
 
             <div class="input-group mb-3 col">
-                <span class="input-group-text" id="inputAzimutResolution">Azimut resolution</span>
-                <input type="number" class="form-control" min="1" step="1" aria-label="azimutResolution"
-                    aria-describedby="inputAzimutResolution">
-                <span class="input-group-text" id="inputAzimutResolution">°</span>
+                <span class="input-group-text">Azimut resolution</span>
+                <input type="number" class="form-control" id="inputAzimutResolution" min="1" step="1" aria-label="azimutResolution"
+                    aria-describedby="inputAzimutResolution" placeholder="[2 - 360]">
+                <span class="input-group-text">°</span>
             </div>
         </div>
 
@@ -50,25 +52,25 @@
 
         <div class="row">
             <div class="input-group mb-3 col">
-                <span class="input-group-text" id="inputElevStartAngle">Elevation start angle</span>
-                <input type="number" class="form-control" min="-90" max="90" step="1" aria-label="elevationStartAngle"
-                    aria-describedby="inputElevStartAngle">
-                <span class="input-group-text" id="inputElevStartAngle">°</span>
+                <span class="input-group-text">Elevation start angle</span>
+                <input type="number" class="form-control" id="inputElevStartAngle" min="-90" max="90" step="1" aria-label="elevationStartAngle"
+                    aria-describedby="inputElevStartAngle" placeholder="[-90 - 90]">
+                <span class="input-group-text">°</span>
             </div>
 
             <div class="input-group mb-3 col">
-                <span class="input-group-text" id="inputElevStopAngle">Elevation stop angle</span>
-                <input type="number" class="form-control" min="-90" max="90" step="1" aria-label="elevationStopAngle"
-                    aria-describedby="inputElevStopAngle">
-                <span class="input-group-text" id="inputElevStopAngle">°</span>
+                <span class="input-group-text">Elevation stop angle</span>
+                <input type="number" class="form-control" id="inputElevStopAngle" min="-90" max="90" step="1" aria-label="elevationStopAngle"
+                    aria-describedby="inputElevStopAngle" placeholder="[-90 - 90]">
+                <span class="input-group-text">°</span>
             </div>
         </div>
 
         <div class="input-group mb-3">
-            <span class="input-group-text" id="inputElevResolution">Elevation resolution</span>
-            <input type="number" class="form-control" min="1" step="1" aria-label="elevationResolution"
-                aria-describedby="inputElevResolution">
-            <span class="input-group-text" id="inputElevResolution">°</span>
+            <span class="input-group-text">Elevation resolution</span>
+            <input type="number" class="form-control" id="inputElevResolution" min="1" step="1" aria-label="elevationResolution"
+                aria-describedby="inputElevResolution" placeholder="[2 - 90]">
+            <span class="input-group-text">°</span>
         </div>
 
         <div class="row">
@@ -78,33 +80,33 @@
 
         <div class="row">
             <div class="input-group mb-3 col">
-                <span class="input-group-text" id="inputStartFrequency">Start frequency</span>
-                <input type="number" class="form-control" min="0" aria-label="startFrequency"
-                    aria-describedby="inputStartFrequency">
-                <span class="input-group-text" id="inputStartFrequency">MHz</span>
+                <span class="input-group-text">Start frequency</span>
+                <input type="number" class="form-control" id="inputStartFrequency" min="0" aria-label="startFrequency"
+                    aria-describedby="inputStartFrequency" placeholder="[1 - 7000]">
+                <span class="input-group-text">MHz</span>
             </div>
 
             <div class="input-group mb-3 col">
-                <span class="input-group-text" id="inputStopFrequency">Stop frequency</span>
-                <input type="number" class="form-control" min="0" aria-label="stopFrequency"
-                    aria-describedby="inputStopFrequency">
-                <span class="input-group-text" id="inputStopFrequency">MHz</span>
+                <span class="input-group-text">Stop frequency</span>
+                <input type="number" class="form-control" id="inputStopFrequency" min="0" aria-label="stopFrequency"
+                    aria-describedby="inputStopFrequency" placeholder="[1 - 7000]">
+                <span class="input-group-text">MHz</span>
             </div>
         </div>
 
         <div class="row">
             <div class="input-group mb-3 col">
-                <span class="input-group-text" id="inputMeasureFrequency">Measurement frequency</span>
-                <input type="number" class="form-control" min="0" aria-label="measureFrequency"
-                    aria-describedby="inputMeasureFrequency">
-                <span class="input-group-text" id="inputMeasureFrequency">MHz</span>
+                <span class="input-group-text">Measurement frequency</span>
+                <input type="number" class="form-control" id="inputMeasureFrequency" min="0" aria-label="measureFrequency"
+                    aria-describedby="inputMeasureFrequency" placeholder="[1 - 7000]">
+                <span class="input-group-text">MHz</span>
             </div>
 
             <div class="input-group mb-3 col">
-                <span class="input-group-text" id="inputGainRefAntenna">Gain Reference Antenna</span>
-                <input type="number" class="form-control" aria-label="gainRefAntenna"
-                    aria-describedby="inputGainRefAntenna">
-                <span class="input-group-text" id="inputGainRefAntenna">dBm</span>
+                <span class="input-group-text">Gain Reference Antenna</span>
+                <input type="number" class="form-control" id="inputGainRefAntenna" aria-label="gainRefAntenna"
+                    aria-describedby="inputGainRefAntenna" placeholder="[-100 - 100]">
+                <span class="input-group-text">dBm</span>
             </div>
         </div>
 
@@ -115,19 +117,19 @@
 
         <div class="row">
             <div class="col">
-                <button class="btn btn-success" type="submit">Start</button>
+                <button class="btn btn-success disabled" type="submit" id="button_start">Start</button>
             </div>
             <div class="col">
-                <button class="btn btn-warning" type="submit">Pause</button>
+                <button class="btn btn-warning disabled" type="submit" id="button_pause">Pause</button>
             </div>
             <div class="col">
-                <button class="btn btn-danger" type="submit">Stop</button>
+                <button class="btn btn-danger disabled" type="submit" id="button_stop" >Stop</button>
             </div>
             <div class="col">
-                <button class="btn btn-secondary" type="submit">Calibrate receiver</button>
+                <button class="btn btn-secondary" type="submit" id="button_calib">Calibrate receiver</button>
             </div>
             <div class="col">
-                <button type="button" class="btn btn-secondary" data-bs-toggle="modal"
+                <button type="button" class="btn btn-secondary" id="button_headcmd" data-bs-toggle="modal"
                     data-bs-target="#headCommandModal">
                     Head commands
                 </button>
@@ -144,24 +146,24 @@
                             <div class="modal-body">
                                 <div class="row">
                                     <div class="input-group mb-3 col">
-                                        <span class="input-group-text" id="inputPanPosition">PAN Position</span>
-                                        <input type="number" class="form-control" min="0" max="360"
+                                        <span class="input-group-text">PAN</span>
+                                        <input type="number" class="form-control"  id="inputPanPosition" min="0" max="360"
                                             aria-label="panPosition" aria-describedby="inputPanPosition">
-                                        <span class="input-group-text" id="inputPanPosition">°</span>
+                                        <span class="input-group-text">°</span>
                                     </div>
                                     <div class="col">
-                                        <button class="btn btn-secondary" type="submit">Set PAN Position</button>
+                                        <button class="btn btn-secondary" type="submit" id="button_pan">Set PAN Position</button>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="input-group mb-3 col">
-                                        <span class="input-group-text" id="inputTiltPosition">TILT Position</span>
-                                        <input type="number" class="form-control" min="-90" max="90"
+                                        <span class="input-group-text">TILT</span>
+                                        <input type="number" class="form-control"  id="inputTiltPosition" min="-90" max="90"
                                             aria-label="tiltPosition" aria-describedby="inputTiltPosition">
-                                        <span class="input-group-text" id="inputTiltPosition">°</span>
+                                        <span class="input-group-text">°</span>
                                     </div>
                                     <div class="col">
-                                        <button class="btn btn-secondary" type="submit">Set TILT Position</button>
+                                        <button class="btn btn-secondary" type="submit" id="button_tilt">Set TILT Position</button>
                                     </div>
                                 </div>
                                 <div class="row">
@@ -170,10 +172,10 @@
                                 </div>
                                 <div class="row">
                                     <div class="col">
-                                        <button class="btn btn-success" type="submit">Home</button>
+                                        <button class="btn btn-success" type="submit" id="button_home">Home</button>
                                     </div>
                                     <div class="col">
-                                        <button class="btn btn-warning" type="submit">Self-check</button>
+                                        <button class="btn btn-warning" type="submit" id="button_check">Self-check</button>
                                     </div>
                                 </div>
                             </div>
@@ -185,7 +187,7 @@
                 </div>
             </div>
             <div class="col">
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#dataModal">
+                <button type="button" class="btn btn-primary disabled" id="button_data" data-bs-toggle="modal" data-bs-target="#dataModal">
                     Live data
                 </button>
 
@@ -209,6 +211,7 @@
                 </div>
             </div>
         </div>
+        <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-1"></div>
     </div>
 </body>
 

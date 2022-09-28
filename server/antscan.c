@@ -1,6 +1,480 @@
 #include "antscan.h"
 #include "head.h"
 #include "receiver.h"
+#include "loop.h"
+
+#include "stdio.h"
+#include "stdint.h"
+#include "stdlib.h"
+#include "time.h"
+#include "string.h"
+#include "unistd.h"
+#include "sys/socket.h"
+#include "arpa/inet.h"
+#include "help.h"
+#include <libwebsockets.h>
+#include <json-c/json.h>
+#include <getopt.h>
+#include <syslog.h>
+#include <sys/ioctl.h>
+#include <netinet/in.h>
+
+static void app_message(const char *msg, app_msg_type_e type);
+static void app_status();
+static void app_measurement_point(int az, int el, int freq, double val);
+static error_t parse_opt(int key, char *arg, struct argp_state *state);
+const char *argp_program_version = "C Websocket Server Example";
+const char args_doc[] = "args doc";
+const char doc[] = "some more doc";
+static struct argp argp = {options, parse_opt, args_doc, doc, NULL, NULL, NULL};
+
+static int debug_level = 0;
+static int syslog_options = LOG_PID | LOG_PERROR;
+static int uid = -1, gid = -1, num_clients = 0;
+static char ws_ip[20] = WS_DEFAULT_IP;
+static struct sockaddr_in ws_in;
+
+static struct lws_context *context;
+static struct lws_context_creation_info info;
+static unsigned char wsbuffer[WSBUFFERSIZE];
+static unsigned char *pwsbuffer = wsbuffer;
+static int wsbuffer_len = 0;
+scan_status_e scan_status;
+
+int start_f, stop_f, measure_f[5], freq_counter = 0;
+char file_name[25], change[5];
+uint16_t start_azimut, stop_azimut, n;
+int16_t start_elev, stop_elev, resolution_elev, m, azimut_sector, resolution_azimut;
+double reference_gain = 0;
+Frequency* freq;
+
+/**
+ * One of these is created for each client connecting.
+ */
+struct per_session_data
+{
+    struct per_session_data *pss_list;
+    struct lws *wsi;
+    char publishing; // nonzero: peer is publishing to us
+};
+
+/**
+ *  One of these is created for each vhost our protocol is used with.
+ */
+struct per_vhost_data
+{
+    struct lws_context *context;
+    struct lws_vhost *vhost;
+    const struct lws_protocols *protocol;
+    struct per_session_data *pss_list; // linked-list of live pss
+};
+
+/**
+ * Parse json array and output content
+ */
+static void json_parse_array(json_object *jarray)
+{
+    int len = json_object_array_length(jarray);
+    json_object *jvalue;
+    for (int i = 0; i < len; i++)
+    {
+        jvalue = json_object_array_get_idx(jarray, i);
+        fprintf(stderr, "%i, ", json_object_get_int(jvalue));
+    }
+    fprintf(stderr, "\n");
+}
+
+/**
+ * Handle requests from client via broadcast callback.
+ */
+static void handle_client_request(void *in, size_t len)
+{
+    NOTUSED(len);
+    /* Parse json string */
+    json_object *jarr = json_tokener_parse(in);
+    enum json_type type;
+    json_object *jvalue;
+    enum server_command_e cmd = SERVER_CMD_NULL;
+    /* We expect always an array from web application */
+    /* Get server command at index 0 */
+    jvalue = json_object_array_get_idx(jarr, SERVER_CMD);
+    type = json_object_get_type(jvalue);
+    if (type == json_type_int)
+    {
+        cmd = json_object_get_int(jvalue);
+        switch (cmd)
+        {
+        case SERVER_CMD_CALIBRATE_ANTENNA: 
+            jvalue = json_object_array_get_idx(jarr, FILENAME);
+            strcpy(file_name, json_object_get_string(jvalue));
+            jvalue = json_object_array_get_idx(jarr, AZIMUTH_ANGLE);
+            azimut_sector = (int)json_object_get_int(jvalue);
+            jvalue = json_object_array_get_idx(jarr, AZIMUT_RESOLUTION);
+            resolution_azimut = (int)json_object_get_int(jvalue);
+            jvalue = json_object_array_get_idx(jarr, ELEVATION_START);
+            start_elev = (int)json_object_get_int(jvalue);
+            jvalue = json_object_array_get_idx(jarr, ELEVATION_STOP);
+            stop_elev = (int)json_object_get_int(jvalue);
+            jvalue = json_object_array_get_idx(jarr, ELEVATION_RESOLUTION);
+            resolution_elev = (int)json_object_get_int(jvalue);
+            jvalue = json_object_array_get_idx(jarr, START_FREQUENCY);
+            start_f = (int)json_object_get_int(jvalue);
+            jvalue = json_object_array_get_idx(jarr, STOP_FREQUENCY);
+            stop_f = (int)json_object_get_int(jvalue);
+            jvalue = json_object_array_get_idx(jarr, TEST_FREQUENCY);
+            measure_f[0] = (int)json_object_get_int(jvalue);
+            freq_counter = 1;
+            jvalue = json_object_array_get_idx(jarr, REFERENCE_GAIN);
+            reference_gain = (int)json_object_get_int(jvalue);
+
+            start_azimut = 360 - (azimut_sector / 2.0);
+            stop_azimut = azimut_sector / 2.0;
+            freq = (Frequency*) malloc(freq_counter * sizeof(Frequency));
+            if(freq == NULL)
+            {
+                app_message("Malloc error", MSG_DANGER);
+                lws_service(context, 100);
+                clean_exit(freq, freq_counter);
+                exit(EXIT_FAILURE);
+            }
+            init_receiver(start_f, stop_f);
+
+            app_message("Receiver calibrated. Change antenna", MSG_SUCCESS);
+            lws_service(context, 100);
+            scan_status = CALIBRATED;
+            app_status();
+            break;
+        case SERVER_CMD_SCAN_START: //start measurement loop
+            app_message("Mesaurement started", MSG_SUCCESS);
+            lws_service(context, 100);
+            scan_status = RUNNING;
+            app_status();
+            break;
+        case SERVER_CMD_SCAN_PAUSE: //pause measurement loop
+            if(scan_status == RUNNING) {
+                app_message("Measurement paused", MSG_WARNING);
+                lws_service(context, 100);
+                scan_status = PAUSED;
+                app_status();
+            } else if(scan_status == PAUSED) {
+                app_message("Measurement conitnued", MSG_SUCCESS);
+                lws_service(context, 100);
+                scan_status = RUNNING;
+                app_status();
+            }
+            break;
+        case SERVER_CMD_SCAN_STOP: //stop measurement loop
+            app_message("Measurement stoped", MSG_DANGER);
+            lws_service(context, 100);
+            scan_status = STOPPED;
+            app_status();
+            break;
+        case SERVER_CMD_SET_PAN: //set pan position
+            jvalue = json_object_array_get_idx(jarr, 1);
+            type = json_object_get_type(jvalue);
+            if(type == json_type_int) {
+                //set_pan_position((int)json_object_get_int(jvalue));
+                app_message("Setting PAN Position", MSG_SUCCESS);
+            } else {
+                app_message("Wrong input", MSG_DANGER);
+            }
+            break;
+        case SERVER_CMD_SET_TILT: //set tilt position
+            jvalue = json_object_array_get_idx(jarr, 1);
+            type = json_object_get_type(jvalue);
+            if(type == json_type_int) {
+                //set_tilt_position((int)json_object_get_int(jvalue));
+                app_message("Setting TILT Position", MSG_SUCCESS);
+            } else {
+                app_message("Wrong input", MSG_DANGER);
+            }
+            break;
+        case SERVER_CMD_CALIBRATE_PT: //self-check
+            //self_check();
+            app_message("Self-Check", MSG_SUCCESS);
+            break;
+        case SERVER_CMD_SET_HOME: //home
+            //home();
+            app_message("Home Position", MSG_SUCCESS);
+            break;
+        case SERVER_CMD_STATUS: 
+            break;
+        case SERVER_CMD_MEASUREMENT_POINT:
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+/**
+ * Broadcast callback for websocket protocol.
+ */
+static int callback_broadcast(struct lws *wsi, enum lws_callback_reasons reason,
+                              void *user, void *in, size_t len)
+{
+    struct per_session_data *pss = (struct per_session_data *)user;
+    struct per_vhost_data *vhd = (struct per_vhost_data *)lws_protocol_vh_priv_get(lws_get_vhost(wsi), lws_get_protocol(wsi));
+    char buf[32];
+    int m = 0;
+
+    switch (reason)
+    {
+    case LWS_CALLBACK_FILTER_NETWORK_CONNECTION:
+        /* Limit number of connected clients */
+        if (num_clients > 3)
+        {
+            lwsl_notice("3 clients already connected. New connection rejected...\n");
+            return -1;
+        }
+        break;
+
+    case LWS_CALLBACK_PROTOCOL_INIT:
+        vhd = lws_protocol_vh_priv_zalloc(lws_get_vhost(wsi), lws_get_protocol(wsi), sizeof(struct per_vhost_data));
+        vhd->context = lws_get_context(wsi);
+        vhd->protocol = lws_get_protocol(wsi);
+        vhd->vhost = lws_get_vhost(wsi);
+        break;
+
+    case LWS_CALLBACK_PROTOCOL_DESTROY:
+        break;
+
+    case LWS_CALLBACK_ESTABLISHED:
+        ++num_clients;
+        lwsl_notice("Client connected.\n");
+        pss->wsi = wsi;
+        if (lws_hdr_copy(wsi, buf, sizeof(buf), WSI_TOKEN_GET_URI) > 0)
+        {
+            pss->publishing = !strcmp(buf, "/publisher");
+        }
+        if (!pss->publishing)
+        {
+            /* add subscribers to the list of live pss held in the vhd */
+            lws_ll_fwd_insert(pss, pss_list, vhd->pss_list);
+        }
+        break;
+
+    case LWS_CALLBACK_CLOSED:
+    case LWS_CALLBACK_WSI_DESTROY:
+        --num_clients;
+        lwsl_notice("Client disconnected.\n");
+        /* remove our closing pss from the list of live pss */
+        lws_ll_fwd_remove(struct per_session_data, pss_list, pss, vhd->pss_list);
+        break;
+
+    case LWS_CALLBACK_SERVER_WRITEABLE:
+        if (pss->publishing)
+            break;
+        /* notice we allowed for LWS_PRE in the payload already */
+        m = lws_write(wsi, &pwsbuffer[LWS_SEND_BUFFER_PRE_PADDING], wsbuffer_len, LWS_WRITE_TEXT);
+        if (m < (int)sizeof wsbuffer_len)
+        {
+            lwsl_err("ERROR %d writing to ws socket\n", m);
+            return -1;
+        }
+        break;
+
+    case LWS_CALLBACK_RECEIVE:
+        /*
+         * For test, our policy is ignore publishing when there are
+         * no subscribers connected.
+         */
+        if (!vhd->pss_list)
+        {
+            break;
+        }
+
+        if (len <= 0)
+        {
+            break;
+        }
+        /* Reply empty json object on unknown request */
+        memcpy(&pwsbuffer[LWS_SEND_BUFFER_PRE_PADDING], "\"{}\"", 4);
+        wsbuffer_len = 4;
+        handle_client_request(in, len);
+        /*
+         * let every subscriber know we want to write something
+         * on them as soon as they are ready
+         */
+        lws_start_foreach_llp(struct per_session_data **, ppss, vhd->pss_list)
+        {
+            if (!(*ppss)->publishing)
+            {
+                lws_callback_on_writable((*ppss)->wsi);
+            }
+        }
+        lws_end_foreach_llp(ppss, pss_list);
+        break;
+
+    default:
+        break;
+    }
+
+    return 0;
+}
+
+/**
+ * Websocket protocol definition.
+ */
+static struct lws_protocols protocols[] = {
+    {"http",
+     lws_callback_http_dummy,
+     0,
+     0,
+     0,
+     NULL,
+     0},
+    {"broadcast",
+     callback_broadcast,
+     sizeof(struct per_session_data),
+     WSBUFFERSIZE,
+     0, NULL, 0},
+    {NULL, NULL, 0, 0, 0, NULL, 0} /* terminator */
+};
+
+/**
+ * Forward status to web application.
+ */
+static void app_status()
+{
+    size_t len = 0;
+    json_object *jobj = json_object_new_object();
+    json_object_object_add(jobj, "cmd", json_object_new_string("status"));
+    json_object_object_add(jobj, "data", json_object_new_int(scan_status));
+    const char *p = json_object_to_json_string_length(jobj, JSON_C_TO_STRING_PLAIN, &len);
+    memcpy(&pwsbuffer[LWS_SEND_BUFFER_PRE_PADDING], (unsigned char *)p, len);
+    wsbuffer_len = len;
+    lws_callback_on_writable_all_protocol(context, &protocols[1]);
+}
+
+/**
+ * Forward measurement point to web application.
+ */
+static void app_measurement_point(int az, int el, int freq, double val)
+{
+    size_t len = 0;
+    json_object *jobj = json_object_new_object();
+    json_object_object_add(jobj, "cmd", json_object_new_string("point"));
+    json_object *jarr = json_object_new_array();
+    json_object_array_put_idx(jarr, 0, json_object_new_int(az));
+    json_object_array_put_idx(jarr, 1, json_object_new_int(el));
+    json_object_array_put_idx(jarr, 2, json_object_new_int(freq));
+    json_object_array_put_idx(jarr, 3, json_object_new_double(val));
+    json_object_object_add(jobj, "data", jarr);
+    const char *p = json_object_to_json_string_length(jobj, JSON_C_TO_STRING_PLAIN, &len);
+    memcpy(&pwsbuffer[LWS_SEND_BUFFER_PRE_PADDING], (unsigned char *)p, len);
+    wsbuffer_len = len;
+    lws_callback_on_writable_all_protocol(context, &protocols[1]);
+    /* Send measurement point immediately to web application */
+    lws_service(context, 0);
+}
+
+/**
+ * Forward message to web application.
+ */
+static void app_message(const char *msg, app_msg_type_e type)
+{
+    size_t len = 0;
+    /* Creat json root object */
+    json_object *jobj = json_object_new_object();
+    /* Creat json data string with message */
+    json_object *str = json_object_new_string(msg);
+    /* Add json command identifier */
+    switch (type)
+    {
+    case MSG_PRIMARY:
+        json_object_object_add(jobj, "cmd", json_object_new_string("primary"));
+        break;
+    case MSG_SECONDARY:
+        json_object_object_add(jobj, "cmd", json_object_new_string("secondary"));
+        break;
+    case MSG_SUCCESS:
+        json_object_object_add(jobj, "cmd", json_object_new_string("success"));
+        break;
+    case MSG_INFO:
+        json_object_object_add(jobj, "cmd", json_object_new_string("info"));
+        break;
+    case MSG_WARNING:
+        json_object_object_add(jobj, "cmd", json_object_new_string("warning"));
+        break;
+    case MSG_DANGER:
+        json_object_object_add(jobj, "cmd", json_object_new_string("danger"));
+        break;
+    case MSG_LIGHT:
+        json_object_object_add(jobj, "cmd", json_object_new_string("light"));
+        break;
+    case MSG_DARK:
+        json_object_object_add(jobj, "cmd", json_object_new_string("dark"));
+        break;
+    default:
+        break;
+    }
+    /* Add data string to root object */
+    json_object_object_add(jobj, "data", str);
+    /* Make full json string, length required for websocket send */
+    const char *p = json_object_to_json_string_length(jobj, JSON_C_TO_STRING_PLAIN, &len);
+    /* Copy json string to websocket buffer, json string exists only temporary */
+    memcpy(&pwsbuffer[LWS_SEND_BUFFER_PRE_PADDING], (unsigned char *)p, len);
+    wsbuffer_len = len;
+    /* Initiate send via websocket, async! */
+    lws_callback_on_writable_all_protocol(context, &protocols[1]);
+    /* The buffer will be send as soon as lws_service is called in main loop! */
+    /* Immediate send requires a direct call of lws_service in here */
+}
+
+/**
+ * Parse command line options, if any.
+ *
+ * run ./example --help on command line for output
+ */
+static error_t parse_opt(int key, char *arg, struct argp_state *state)
+{
+    switch (key)
+    {
+    case OPT_WS_IP:
+        if (inet_pton(AF_INET, arg, &ws_in.sin_addr) == 0)
+        {
+            lwsl_err("Error in websocket server IP.\n");
+        }
+        else
+        {
+            /* Overwrite default IP string*/
+            inet_ntop(AF_INET, &ws_in.sin_addr, ws_ip, sizeof ws_ip);
+        }
+        break;
+    case OPT_WS_PORT:
+        ws_in.sin_port = atoi(arg);
+        break;
+    case OPT_GROUP:
+        gid = atoi(arg);
+        break;
+    case OPT_USER:
+        uid = atoi(arg);
+        break;
+    case ARGP_KEY_END:
+        if (state->arg_num > 0)
+        {
+            /* We use only options but no arguments */
+            argp_usage(state);
+        }
+        break;
+    default:
+        return ARGP_ERR_UNKNOWN;
+    }
+    return 0;
+}
+
+/**
+ * Incoming signal handler. Close server nice and clean.
+ */
+static void sighandler(int sig)
+{
+    NOTUSED(sig);
+    /* Stop websocket server */
+    lws_cancel_service(context);
+    lws_context_destroy(context);
+    exit(EXIT_SUCCESS);
+}
 
 void clean_exit(Frequency* freq, int freq_counter)
 {
@@ -14,9 +488,11 @@ void clean_exit(Frequency* freq, int freq_counter)
     free(freq);
 }
 
-int main()
+int main(int argc, char **argv)
 {
     clean();
+
+    memset(file_name, '0', sizeof(file_name));
 
     if(create_socket() == -1)
     {
@@ -24,148 +500,76 @@ int main()
     }
 
     // Send connection request to server
-    if (connect_server() == -1)
+    /*if (connect_server() == -1)
     {
         close_socket();
         return 0;
+    }*/
+
+    /* Set default IP addresses and ports for all service. */
+    inet_pton(AF_INET, ws_ip, &ws_in.sin_addr);
+    ws_in.sin_port = WS_DEFAULT_PORT;
+
+    /* Parse the command line options */
+    if (argp_parse(&argp, argc, argv, 0, 0, 0))
+    {
+        exit(EXIT_SUCCESS);
     }
 
-    //self_check();
+    /* Take care to zero down the info struct, contains random garbage
+     * from the stack otherwise.
+     */
+    memset(&info, 0, sizeof(info));
+    /* Fill in defaults */
+    info.port = ws_in.sin_port;
+    info.iface = ws_ip;
+    info.protocols = protocols;
+    info.gid = -1;
+    info.uid = -1;
+    info.max_http_header_pool = 16;
+    info.options = 0;
+    info.extensions = NULL;
+    info.timeout_secs = 5;
+    info.max_http_header_data = 2048;
 
-    int start_f;
-    int stop_f;
-    int measure_f[5];
-    char file_name[25];
-    memset(file_name, '0', sizeof(file_name));
-    char change[5];
-    uint16_t start_azimut, stop_azimut, n;
-    int16_t start_elev, stop_elev, resolution_elev, m, azimut_sector, resolution_azimut;
-    double reference_gain = 0;
-    int freq_counter = 0;
-    time_t now = time(NULL);
-    struct tm* t = localtime(&now);
+    /* Catch signal for program termination */
+    signal(SIGINT, sighandler);
+    signal(SIGTERM, sighandler);
+    signal(SIGQUIT, sighandler);
 
-    printf("file name [enter for default]: ");
-    gets(file_name);
-    printf("gain reference antenna: ");
-    scanf("%lf", &reference_gain);
-    do
-    {
-        printf("azimut angle [0~360]: ");
-        scanf("%hd", &azimut_sector);
-    } while (azimut_sector <= 0);
-    do
-    {
-        printf("azimut resolution: ");
-        scanf("%hd", &resolution_azimut);
-    } while (resolution_azimut <= 0);
-    printf("start angle elevation [-90~90]: ");
-    scanf("%hu", &start_elev);
-    printf("stop angle elevation [-90~90]: ");
-    scanf("%hu", &stop_elev);
-    do
-    {
-        printf("elevation resulution: ");
-        scanf("%hd", &resolution_elev);
-    } while (resolution_elev <= 0);
-    do
-    {
-        printf("start frequency [MHz]: ");
-        scanf("%d", &start_f);
-    } while (start_f < 0);
-    do
-    {
-        printf("stop frequency [MHz]: ");
-        scanf("%d", &stop_f);
-    } while (stop_f < 0 || stop_f <= start_f);
-    do
-    {
-        freq_counter += 1;
-        printf("measure frequency [MHz; end = 0]: ");
-        scanf("%d", &measure_f[freq_counter - 1]);
-    } while (measure_f[freq_counter - 1] != 0);
+    /* Only try to log things according to our debug_level (in libwebsocket)*/
+    setlogmask(LOG_UPTO(LOG_DEBUG));
+    openlog("lwsts", syslog_options, LOG_DAEMON);
 
-    init_receiver(start_f, stop_f);
+    /* Tell the library what debug level to emit and to send it to syslog */
+    lws_set_log_level(debug_level, lwsl_emit_syslog);
 
-    printf("change antenna, when finished enter 0 \n");
-    scanf("%s", change);
+    info.gid = gid;
+    info.uid = uid;
+    info.max_http_header_pool = 16;
+    info.timeout_secs = 5;
 
-    start_azimut = 360 - (azimut_sector / 2.0);
-    stop_azimut = azimut_sector / 2.0;
-
-    freq_counter -= 1;
-
-    Frequency* freq = (Frequency*) malloc(freq_counter * sizeof(Frequency));
-    if(freq == NULL)
+    /* Create libwebsocket context representing this server */
+    context = lws_create_context(&info);
+    if (context == NULL)
     {
-        printf("Malloc error");
-        clean_exit(freq, freq_counter);
-        return 0;
+        lwsl_err("libwebsocket init failed\n");
+        return EXIT_FAILURE;
     }
 
-    for(int b = 0; b < freq_counter; b++)
+    // Infinite loop, to end this server send SIGTERM. (CTRL+C) */
+    for (;;)
     {
-        freq[b].frequency = measure_f[b];
-
-        if(file_name[1] == '0')
-        {
-            snprintf(freq[b].file_path, FILENAME_MAX, "./server/data/scan_%02u_%02u_%04u_%02u_%02u_%02u_%dMHz.csv",
-            t->tm_mday,
-            t->tm_mon + 1,
-            t->tm_year + 1900,
-            t->tm_hour,
-            t->tm_min,
-            t->tm_sec,
-            freq[b].frequency);
-        } else
-        {
-            snprintf(freq[b].file_path, FILENAME_MAX, "./server/data/%s_%dMHz.csv", file_name, freq[b].frequency);
-        }
-
-        freq[b].file_stream = fopen(freq[b].file_path, "w");
-        if(freq[b].file_stream == NULL)
-        {
-            printf("Cannot open a file");
-            clean_exit(freq, freq_counter);
-            return 0;
-        }
-
-        fprintf(freq[b].file_stream, "START_FREQ:%d;STOP_FREQ:%d;MEASURE_FREQ:%d;REF_GAIN:%lf;\n", start_f, stop_f, freq[b].frequency, reference_gain);
-        fputs("TILT/PAN;", freq[b].file_stream);
-        for(int i = 0; i <= azimut_sector; i += resolution_azimut)
-        {
-            if(start_azimut >= 180)
-            {
-                fprintf(freq[b].file_stream, "%d;", (start_azimut - 360 + i) % 360);
-            } else
-            {
-                fprintf(freq[b].file_stream, "%d;", (((start_azimut - stop_azimut) / 2) + i) % 360);
-            }
-        }
-        fputs("\n", freq[b].file_stream);
+        lws_service(context, 100);
+        /* libwebsocket_service will process all waiting events with
+         * their callback functions and then wait 100 ms.
+         * (This is a single threaded web server and this will keep our
+         * server from generating load while there are no
+         * requests to process)
+         */
     }
 
-    for(m = start_elev; m <= stop_elev; m += resolution_elev)
-    {
-            set_tilt_position(m);
-            for(int c = 0; c < freq_counter; c++)
-            {
-                fprintf(freq[c].file_stream, "%d;", m);
-            }
-            for(n = 0; n <= azimut_sector; n += resolution_azimut)
-            {
-                set_pan_position(start_azimut + n);
-                for(int d = 0; d < freq_counter; d++)
-                {
-                    fprintf(freq[d].file_stream, "%.01lf;", measure(freq[d].frequency) + reference_gain);
-                }
-            }
-            for(int e = 0; e < freq_counter; e++)
-            {
-                fputs("\n", freq[e].file_stream);
-                fflush(freq[e].file_stream);
-            }
-    }
+    sighandler(0);
 
     clean_exit(freq, freq_counter);
 

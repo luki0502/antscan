@@ -23,7 +23,8 @@
 			"cstdio": "c",
 			"functional": "c",
 			"string_view": "c",
-			"antscan.h": "c"
+			"antscan.h": "c",
+			"string.h": "c"
 		}
 	}
 }

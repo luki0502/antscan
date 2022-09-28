@@ -1,4 +1,3 @@
-
 #include "receiver.h"
 
 static char idnQuery[] = "*IDN?\n";
