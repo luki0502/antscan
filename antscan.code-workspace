@@ -1,0 +1,29 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"*.ts": "typescript",
+			"*.js": "javascript",
+			"stdint.h": "c",
+			"stdio.h": "c",
+			"*.tcc": "c",
+			"fstream": "c",
+			"istream": "c",
+			"ostream": "c",
+			"sstream": "c",
+			"unordered_map": "c",
+			"numeric": "c",
+			"head.h": "c",
+			"uv.h": "c",
+			"socket.h": "c",
+			"cstdio": "c",
+			"functional": "c",
+			"string_view": "c",
+			"antscan.h": "c"
+		}
+	}
+}
