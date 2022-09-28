@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Antenna Scan</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+</head>
+
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8"
+        crossorigin="anonymous"></script>
+
+    <div class="container-sm text-center">
+        <h1>Data input</h1>
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="inputFilename">Filename</span>
+            <input type="text" class="form-control" aria-label="Filename" aria-describedby="inputFilename">
+            <span class="input-group-text" id="inputFilename">.csv</span>
+        </div>
+
+        <div class="row">
+            <br>
+            <br>
+        </div>
+
+        <div class="row">
+            <div class="input-group mb-3 col">
+                <span class="input-group-text" id="inputAzimutAngle">Azimut angle</span>
+                <input type="number" class="form-control" min="0" max="360" step="1" aria-label="azimutAngle"
+                    aria-describedby="inputAzimutAngle">
+                <span class="input-group-text" id="inputAzimutAngle">°</span>
+            </div>
+
+            <div class="input-group mb-3 col">
+                <span class="input-group-text" id="inputAzimutResolution">Azimut resolution</span>
+                <input type="number" class="form-control" min="1" step="1" aria-label="azimutResolution"
+                    aria-describedby="inputAzimutResolution">
+                <span class="input-group-text" id="inputAzimutResolution">°</span>
+            </div>
+        </div>
+
+        <div class="row">
+            <br>
+            <br>
+        </div>
+
+        <div class="row">
+            <div class="input-group mb-3 col">
+                <span class="input-group-text" id="inputElevStartAngle">Elevation start angle</span>
+                <input type="number" class="form-control" min="-90" max="90" step="1" aria-label="elevationStartAngle"
+                    aria-describedby="inputElevStartAngle">
+                <span class="input-group-text" id="inputElevStartAngle">°</span>
+            </div>
+
+            <div class="input-group mb-3 col">
+                <span class="input-group-text" id="inputElevStopAngle">Elevation stop angle</span>
+                <input type="number" class="form-control" min="-90" max="90" step="1" aria-label="elevationStopAngle"
+                    aria-describedby="inputElevStopAngle">
+                <span class="input-group-text" id="inputElevStopAngle">°</span>
+            </div>
+        </div>
+
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="inputElevResolution">Elevation resolution</span>
+            <input type="number" class="form-control" min="1" step="1" aria-label="elevationResolution"
+                aria-describedby="inputElevResolution">
+            <span class="input-group-text" id="inputElevResolution">°</span>
+        </div>
+
+        <div class="row">
+            <br>
+            <br>
+        </div>
+
+        <div class="row">
+            <div class="input-group mb-3 col">
+                <span class="input-group-text" id="inputStartFrequency">Start frequency</span>
+                <input type="number" class="form-control" min="0" aria-label="startFrequency"
+                    aria-describedby="inputStartFrequency">
+                <span class="input-group-text" id="inputStartFrequency">MHz</span>
+            </div>
+
+            <div class="input-group mb-3 col">
+                <span class="input-group-text" id="inputStopFrequency">Stop frequency</span>
+                <input type="number" class="form-control" min="0" aria-label="stopFrequency"
+                    aria-describedby="inputStopFrequency">
+                <span class="input-group-text" id="inputStopFrequency">MHz</span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="input-group mb-3 col">
+                <span class="input-group-text" id="inputMeasureFrequency">Measurement frequency</span>
+                <input type="number" class="form-control" min="0" aria-label="measureFrequency"
+                    aria-describedby="inputMeasureFrequency">
+                <span class="input-group-text" id="inputMeasureFrequency">MHz</span>
+            </div>
+
+            <div class="input-group mb-3 col">
+                <span class="input-group-text" id="inputGainRefAntenna">Gain Reference Antenna</span>
+                <input type="number" class="form-control" aria-label="gainRefAntenna"
+                    aria-describedby="inputGainRefAntenna">
+                <span class="input-group-text" id="inputGainRefAntenna">dBm</span>
+            </div>
+        </div>
+
+        <div class="row">
+            <br>
+            <br>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <button class="btn btn-success" type="submit">Start</button>
+            </div>
+            <div class="col">
+                <button class="btn btn-warning" type="submit">Pause</button>
+            </div>
+            <div class="col">
+                <button class="btn btn-danger" type="submit">Stop</button>
+            </div>
+            <div class="col">
+                <button class="btn btn-secondary" type="submit">Calibrate receiver</button>
+            </div>
+            <div class="col">
+                <button type="button" class="btn btn-secondary" data-bs-toggle="modal"
+                    data-bs-target="#headCommandModal">
+                    Head commands
+                </button>
+
+                <div class="modal fade" id="headCommandModal" data-bs-backdrop="static" data-bs-keyboard="false"
+                    tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="staticBackdropLabel">Head commands</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="input-group mb-3 col">
+                                        <span class="input-group-text" id="inputPanPosition">PAN Position</span>
+                                        <input type="number" class="form-control" min="0" max="360"
+                                            aria-label="panPosition" aria-describedby="inputPanPosition">
+                                        <span class="input-group-text" id="inputPanPosition">°</span>
+                                    </div>
+                                    <div class="col">
+                                        <button class="btn btn-secondary" type="submit">Set PAN Position</button>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="input-group mb-3 col">
+                                        <span class="input-group-text" id="inputTiltPosition">TILT Position</span>
+                                        <input type="number" class="form-control" min="-90" max="90"
+                                            aria-label="tiltPosition" aria-describedby="inputTiltPosition">
+                                        <span class="input-group-text" id="inputTiltPosition">°</span>
+                                    </div>
+                                    <div class="col">
+                                        <button class="btn btn-secondary" type="submit">Set TILT Position</button>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <br>
+                                    <br>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        <button class="btn btn-success" type="submit">Home</button>
+                                    </div>
+                                    <div class="col">
+                                        <button class="btn btn-warning" type="submit">Self-check</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#dataModal">
+                    Live data
+                </button>
+
+                <div class="modal fade" id="dataModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+                    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-fullscreen">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="staticBackdropLabel">Live data</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <img src="platzhalter.jpg" height="450px">
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
