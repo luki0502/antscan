@@ -94,7 +94,11 @@ function wsConnect() {
           showToast(msg.data, ToastType.Dark);
           break;
         case 'status':
-            app_status_handler(msg.data);
+          app_status_handler(msg.data);
+          break;
+        case 'point':
+          console.info(msg.data);
+          document.getElementById('dataField').innerHTML = msg.data;
           break;
         default:
           break;
@@ -352,7 +356,6 @@ function app_status_handler(status) {
       break;
     case AppStatus.Calibrated:
       document.getElementById('button_start').classList.remove('disabled');
-      document.getElementById('button_pause').classList.remove('disabled');
       break;
     case AppStatus.Running:
       document.getElementById('button_calib').classList.add('disabled');
@@ -360,6 +363,7 @@ function app_status_handler(status) {
       document.getElementById('button_headcmd').classList.add('disabled');
       document.getElementById('button_stop').classList.remove('disabled');
       document.getElementById('button_data').classList.remove('disabled');
+      document.getElementById('button_pause').classList.remove('disabled');
       document.getElementById('button_pause').classList.replace('btn-warning', 'btn-light');
       break;
     case AppStatus.Paused:

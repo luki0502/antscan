@@ -113,6 +113,8 @@ static void handle_client_request(void *in, size_t len)
     enum json_type type;
     json_object *jvalue;
     enum server_command_e cmd = SERVER_CMD_NULL;
+    int val;
+    char buffer[25];
     /* We expect always an array from web application */
     /* Get server command at index 0 */
     jvalue = json_object_array_get_idx(jarr, SERVER_CMD);
@@ -186,7 +188,7 @@ static void handle_client_request(void *in, size_t len)
                 uv_mutex_lock(&lock_pause_measurement);
                 measurement_thread_pause = true;
                 uv_mutex_unlock(&lock_pause_measurement);
-                app_message("Measurement conitnued", MSG_SUCCESS);
+                app_message("Measurement paused", MSG_WARNING);
                 lws_service(context, 0);
                 scan_status = PAUSED;
                 app_status();
@@ -198,7 +200,7 @@ static void handle_client_request(void *in, size_t len)
                 measurement_thread_pause = false;
                 uv_cond_broadcast(&cond_resume_measurement);
                 uv_mutex_unlock(&lock_pause_measurement);
-                app_message("Measurement paused", MSG_WARNING);
+                app_message("Measurement continued", MSG_SUCCESS);
                 lws_service(context, 0);
                 scan_status = RUNNING;
                 app_status();
@@ -213,15 +215,16 @@ static void handle_client_request(void *in, size_t len)
             uv_thread_join(&measurement_thread);
             app_message("Measurement stoped", MSG_DANGER);
             lws_service(context, 0);
-            scan_status = STOPPED;
             app_status();
             break;
         case SERVER_CMD_SET_PAN: //set pan position
             jvalue = json_object_array_get_idx(jarr, 1);
             type = json_object_get_type(jvalue);
             if(type == json_type_int) {
-                set_pan_position((int)json_object_get_int(jvalue));
-                app_message("Setting PAN Position", MSG_SUCCESS);
+                val = (int)json_object_get_int(jvalue);
+                set_pan_position(val);
+                sprintf(buffer, "PAN Position set to %d°", val);
+                app_message(buffer, MSG_SUCCESS);
             } else {
                 app_message("Wrong input", MSG_DANGER);
             }
@@ -230,15 +233,17 @@ static void handle_client_request(void *in, size_t len)
             jvalue = json_object_array_get_idx(jarr, 1);
             type = json_object_get_type(jvalue);
             if(type == json_type_int) {
-                set_tilt_position((int)json_object_get_int(jvalue));
-                app_message("Setting TILT Position", MSG_SUCCESS);
+                val = (int)json_object_get_int(jvalue);
+                set_tilt_position(val);
+                sprintf(buffer, "TILT Position set to %d°", val);
+                app_message(buffer, MSG_SUCCESS);
             } else {
                 app_message("Wrong input", MSG_DANGER);
             }
             break;
         case SERVER_CMD_CALIBRATE_PT: //self-check
             self_check();
-            app_message("Self-Check", MSG_SUCCESS);
+            app_message("Self-Check finished", MSG_SUCCESS);
             break;
         case SERVER_CMD_SET_HOME: //home
             home();
@@ -547,11 +552,11 @@ int main(int argc, char **argv)
     }
 
     // Send connection request to server
-    /*if (connect_server() == -1)
+    if (connect_server() == -1)
     {
         close_socket();
         return 0;
-    }*/
+    }
 
     /* Set default IP addresses and ports for all service. */
     inet_pton(AF_INET, ws_ip, &ws_in.sin_addr);
