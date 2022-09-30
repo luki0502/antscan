@@ -208,10 +208,10 @@ static void handle_client_request(void *in, size_t len)
             break;
         case SERVER_CMD_SCAN_STOP: //stop measurement loop
             uv_mutex_lock(&lock_pause_measurement);
+            measurement_thread_exit = true;
             measurement_thread_pause = false;
             uv_cond_broadcast(&cond_resume_measurement);
             uv_mutex_unlock(&lock_pause_measurement);
-            measurement_thread_exit = true;
             uv_thread_join(&measurement_thread);
             app_message("Measurement stoped", MSG_DANGER);
             lws_service(context, 0);

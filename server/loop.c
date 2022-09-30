@@ -102,6 +102,11 @@ void measurement_loop()
                         break;
                     }
                 }
+                if (measurement_thread_exit)
+                {
+                    /* Measurement has been canceled */
+                    break;
+                }
             }
             for(int e = 0; e < freq_counter; e++)
             {
@@ -121,4 +126,5 @@ void measurement_loop()
     lws_service(context, 0);
     /* App status is kicked via main loop */
     app_status();
+    pthread_exit(0);
 }

@@ -94,7 +94,7 @@ uint16_t query_pan_position()
     // PAN-Position
     dec_output = (server_message[11] << 8) + server_message[12];
     dec_output = dec_output / 100.0;
-    printf("PAN-position: %u degree\n", dec_output);
+    //printf("PAN-position: %u degree\n", dec_output);
 
     return dec_output % 360;
 }
@@ -122,7 +122,7 @@ int16_t query_tilt_position()
         dec_output = dec_output - 360;
     }
     dec_output_signed = (int16_t)dec_output;
-    printf("TILT-position: %d degree\n", dec_output_signed);
+    //printf("TILT-position: %d degree\n", dec_output_signed);
 
     return dec_output_signed;
 }
