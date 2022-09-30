@@ -54,7 +54,7 @@ void file_init()
             return;
         }
 
-        fprintf(freq[b].file_stream, "START_FREQ:%d;STOP_FREQ:%d;MEASURE_FREQ:%d;REF_GAIN:%lf;\n", start_f, stop_f, freq[b].frequency, reference_gain);
+        fprintf(freq[b].file_stream, "START_FREQ:%d;STOP_FREQ:%d;MEASURE_FREQ:%d;REF_GAIN:%lf;\n", start_f, stop_f, freq[b].frequency, freq[b].reference_gain);
         fputs("TILT/PAN;", freq[b].file_stream);
         for(int i = 0; i <= azimut_sector; i += resolution_azimut)
         {
@@ -85,7 +85,7 @@ void measurement_loop()
                 set_pan_position(start_azimut + n);
                 for(int d = 0; d < freq_counter; d++)
                 {
-                    double val = measure(freq[d].frequency) + reference_gain;
+                    double val = measure(freq[d].frequency) + freq[d].reference_gain;
                     fprintf(freq[d].file_stream, "%.01lf;", val);
 
                     uv_mutex_lock(&lock_pause_measurement);

@@ -90,14 +90,21 @@ int thread_to_core(int core_id)
 /**
  * Parse json array and output content
  */
-static void json_parse_array(json_object *jarray)
+static void json_parse_array(json_object *jarray, jarray_index_e key)
 {
     int len = json_object_array_length(jarray);
     json_object *jvalue;
+
     for (int i = 0; i < len; i++)
     {
         jvalue = json_object_array_get_idx(jarray, i);
-        fprintf(stderr, "%i, ", json_object_get_int(jvalue));
+        for(int j = 0; j < freq_counter; j++) {
+            if(key == TEST_FREQUENCY) {
+                freq[j].frequency = json_object_get_int(jvalue);
+            } else if(key == REFERENCE_GAIN) {
+                freq[j].reference_gain = json_object_get_int(jvalue);
+            }
+        }
     }
     fprintf(stderr, "\n");
 }
@@ -125,6 +132,17 @@ static void handle_client_request(void *in, size_t len)
         switch (cmd)
         {
         case SERVER_CMD_CALIBRATE_ANTENNA: 
+            jvalue = json_object_array_get_idx(jarr, FREQ_COUNTER);
+            freq_counter = (int)json_object_get_int(jvalue);
+            freq = (Frequency*) malloc(freq_counter * sizeof(Frequency));
+            if(freq == NULL)
+            {
+                app_message("Malloc error", MSG_DANGER);
+                lws_service(context, 0);
+                clean_exit(freq, freq_counter);
+                exit(EXIT_FAILURE);
+            }
+
             jvalue = json_object_array_get_idx(jarr, FILENAME);
             strcpy(file_name, json_object_get_string(jvalue));
             jvalue = json_object_array_get_idx(jarr, AZIMUTH_ANGLE);
@@ -142,21 +160,13 @@ static void handle_client_request(void *in, size_t len)
             jvalue = json_object_array_get_idx(jarr, STOP_FREQUENCY);
             stop_f = (int)json_object_get_int(jvalue);
             jvalue = json_object_array_get_idx(jarr, TEST_FREQUENCY);
-            measure_f[0] = (int)json_object_get_int(jvalue);
-            freq_counter = 1;
+            json_parse_array(jvalue, TEST_FREQUENCY);
             jvalue = json_object_array_get_idx(jarr, REFERENCE_GAIN);
-            reference_gain = (int)json_object_get_int(jvalue);
+            json_parse_array(jvalue, REFERENCE_GAIN);
 
             start_azimut = 360 - (azimut_sector / 2.0);
             stop_azimut = azimut_sector / 2.0;
-            freq = (Frequency*) malloc(freq_counter * sizeof(Frequency));
-            if(freq == NULL)
-            {
-                app_message("Malloc error", MSG_DANGER);
-                lws_service(context, 0);
-                clean_exit(freq, freq_counter);
-                exit(EXIT_FAILURE);
-            }
+
             init_receiver(start_f, stop_f);
             file_init();
             app_message("Receiver calibrated. Change antenna", MSG_SUCCESS);

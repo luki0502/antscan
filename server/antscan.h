@@ -1,4 +1,5 @@
 #include "stdio.h"
+#include <json-c/json.h>
 
 #define NOTUSED(V) ((void)V)
 #define WSBUFFERSIZE 8192 /* Byte */
@@ -18,7 +19,8 @@ typedef enum jarray_index_e
     START_FREQUENCY,
     STOP_FREQUENCY,
     TEST_FREQUENCY,
-    REFERENCE_GAIN
+    REFERENCE_GAIN,
+    FREQ_COUNTER
 } jarray_index_e;
 
 typedef enum scan_status_e
@@ -61,6 +63,7 @@ typedef struct Frequencies
     int frequency;
     char file_path[FILENAME_MAX];
     FILE* file_stream;
+    double reference_gain;
 } Frequency;
 
 void clean_exit(Frequency* freq, int freq_counter);

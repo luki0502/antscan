@@ -300,23 +300,47 @@ function createDataFrame() {
   document.getElementById('inputStartFrequency').classList.add('is-valid');
   document.getElementById('inputStopFrequency').classList.add('is-valid');
 
-  let testFrequency = document.getElementById('inputMeasureFrequency').valueAsNumber;
+  let testFrequency = document.getElementById('inputMeasureFrequency').value.split(',');
   document.getElementById('inputMeasureFrequency').classList.remove('is-valid', 'is-invalid');
-  if(testFrequency < 1 || testFrequency > 7000 || Number.isNaN(testFrequency) || testFrequency < startFrequency || testFrequency > stopFrequency) {
+  if(testFrequency.lenght === 0) {
     document.getElementById('inputMeasureFrequency').classList.add('is-invalid');
     return false;
   }
+  for(let i = 0; i < testFrequency.lenght; i++) {
+    let f_val = Number.parseInt(testFrequency[i], 10);
+    if(f_val < 1 || f_val > 7000 || Number.isNaN(f_val) || f_val < startFrequency || f_val > stopFrequency) {
+      document.getElementById('inputMeasureFrequency').classList.add('is-invalid');
+      return false;
+    }
+    testFrequency[i] = f_val;
+  }
   document.getElementById('inputMeasureFrequency').classList.add('is-valid');
 
-  let refGain = document.getElementById('inputGainRefAntenna').valueAsNumber;
+  let refGain = document.getElementById('inputGainRefAntenna').value.split(',');
   document.getElementById('inputGainRefAntenna').classList.remove('is-valid', 'is-invalid');
-  if(refGain < -100 || refGain > 100 || Number.isNaN(refGain)) {
+  if(refGain.lenght === 0) {
     document.getElementById('inputGainRefAntenna').classList.add('is-invalid');
     return false;
   }
+  for(let i = 0; i < refGain.lenght; i++) {
+    let g_val = Number.parseInt(refGain[i], 10);
+    if(g_val < -100 || g_val > 100 || Number.isNaN(g_val)) {
+      document.getElementById('inputGainRefAntenna').classList.add('is-invalid');
+      return false;
+    }
+    refGain[i] = g_val;
+  }
   document.getElementById('inputGainRefAntenna').classList.add('is-valid');
+  /* One reference gain for every measurement frequency */
+  if(testFrequency.lenght != refGain.lenght) {
+    document.getElementById('inputMeasureFrequency').classList.remove('is-valid', 'is-invalid');
+    document.getElementById('inputGainRefAntenna').classList.remove('is-valid', 'is-invalid');
+    document.getElementById('inputMeasureFrequency').classList.add('is-invalid');
+    document.getElementById('inputGainRefAntenna').classList.add('is-invalid');
+    return false;
+  }
 
-  return [ServerCommand.CmdCalib, filename, azAngle, azResolution, elStartAngle, elStopAngle, elResolution, startFrequency, stopFrequency, testFrequency, refGain];
+  return [ServerCommand.CmdCalib, filename, azAngle, azResolution, elStartAngle, elStopAngle, elResolution, startFrequency, stopFrequency, testFrequency, refGain, testFrequency.lenght];
 
 }
 
