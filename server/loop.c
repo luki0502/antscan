@@ -29,8 +29,6 @@ void file_init()
     t = localtime(&now);
     for(int b = 0; b < freq_counter; b++)
     {
-        freq[b].frequency = measure_f[b];
-
         if(file_name[1] == '0')
         {
             snprintf(freq[b].file_path, FILENAME_MAX, "./server/data/scan_%02u_%02u_%04u_%02u_%02u_%02u_%dMHz.csv",

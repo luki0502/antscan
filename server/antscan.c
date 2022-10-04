@@ -42,7 +42,7 @@ bool measurement_thread_exit = false;
 bool measurement_thread_pause = false;
 uv_thread_t measurement_thread;
 
-int start_f, stop_f, measure_f[5], freq_counter = 0;
+int start_f, stop_f, freq_counter = 0;
 char file_name[25];
 uint16_t start_azimut, stop_azimut, n;
 int16_t start_elev, stop_elev, resolution_elev, m, azimut_sector, resolution_azimut;
@@ -94,19 +94,14 @@ static void json_parse_array(json_object *jarray, jarray_index_e key)
 {
     int len = json_object_array_length(jarray);
     json_object *jvalue;
-
-    for (int i = 0; i < len; i++)
-    {
-        jvalue = json_object_array_get_idx(jarray, i);
-        for(int j = 0; j < freq_counter; j++) {
-            if(key == TEST_FREQUENCY) {
-                freq[j].frequency = json_object_get_int(jvalue);
-            } else if(key == REFERENCE_GAIN) {
-                freq[j].reference_gain = json_object_get_int(jvalue);
-            }
+     for(int j = 0; j < freq_counter; j++) {
+        jvalue = json_object_array_get_idx(jarray, j);
+        if(key == TEST_FREQUENCY) {
+            freq[j].frequency = json_object_get_int(jvalue);
+        } else if(key == REFERENCE_GAIN) {
+            freq[j].reference_gain = json_object_get_int(jvalue);
         }
     }
-    fprintf(stderr, "\n");
 }
 
 /**

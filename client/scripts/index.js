@@ -302,11 +302,11 @@ function createDataFrame() {
 
   let testFrequency = document.getElementById('inputMeasureFrequency').value.split(',');
   document.getElementById('inputMeasureFrequency').classList.remove('is-valid', 'is-invalid');
-  if(testFrequency.lenght === 0) {
+  if(testFrequency.length === 0) {
     document.getElementById('inputMeasureFrequency').classList.add('is-invalid');
     return false;
   }
-  for(let i = 0; i < testFrequency.lenght; i++) {
+  for(let i = 0; i < testFrequency.length; i++) {
     let f_val = Number.parseInt(testFrequency[i], 10);
     if(f_val < 1 || f_val > 7000 || Number.isNaN(f_val) || f_val < startFrequency || f_val > stopFrequency) {
       document.getElementById('inputMeasureFrequency').classList.add('is-invalid');
@@ -318,11 +318,11 @@ function createDataFrame() {
 
   let refGain = document.getElementById('inputGainRefAntenna').value.split(',');
   document.getElementById('inputGainRefAntenna').classList.remove('is-valid', 'is-invalid');
-  if(refGain.lenght === 0) {
+  if(refGain.length === 0) {
     document.getElementById('inputGainRefAntenna').classList.add('is-invalid');
     return false;
   }
-  for(let i = 0; i < refGain.lenght; i++) {
+  for(let i = 0; i < refGain.length; i++) {
     let g_val = Number.parseInt(refGain[i], 10);
     if(g_val < -100 || g_val > 100 || Number.isNaN(g_val)) {
       document.getElementById('inputGainRefAntenna').classList.add('is-invalid');
@@ -332,7 +332,7 @@ function createDataFrame() {
   }
   document.getElementById('inputGainRefAntenna').classList.add('is-valid');
   /* One reference gain for every measurement frequency */
-  if(testFrequency.lenght != refGain.lenght) {
+  if(testFrequency.length != refGain.length) {
     document.getElementById('inputMeasureFrequency').classList.remove('is-valid', 'is-invalid');
     document.getElementById('inputGainRefAntenna').classList.remove('is-valid', 'is-invalid');
     document.getElementById('inputMeasureFrequency').classList.add('is-invalid');
@@ -340,7 +340,7 @@ function createDataFrame() {
     return false;
   }
 
-  return [ServerCommand.CmdCalib, filename, azAngle, azResolution, elStartAngle, elStopAngle, elResolution, startFrequency, stopFrequency, testFrequency, refGain, testFrequency.lenght];
+  return [ServerCommand.CmdCalib, filename, azAngle, azResolution, elStartAngle, elStopAngle, elResolution, startFrequency, stopFrequency, testFrequency, refGain, testFrequency.length];
 
 }
 
@@ -405,7 +405,9 @@ document.addEventListener('DOMContentLoaded', () => {
   /* Add click event listeners to each button */
   document.getElementById('button_calib').addEventListener('click', () => {
     const data = createDataFrame();
-    sendServerCommand(data); //calib receiver
+    if(data !== false) {
+      sendServerCommand(data); //calib receiver
+    }
   });
   document.getElementById('button_start').addEventListener('click', () => {
     sendServerCommand([ServerCommand.CmdStart, 1]); //start measurement loop
@@ -418,11 +420,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('button_pan').addEventListener('click', () => {
     const data = createPanData();
-    sendServerCommand([ServerCommand.CmdPan, data]); //set pan position
+    if(data !== false) {
+      sendServerCommand([ServerCommand.CmdPan, data]); //set pan position
+    }
   });
   document.getElementById('button_tilt').addEventListener('click', () => {
     const data = createTiltData();
-    sendServerCommand([ServerCommand.CmdTilt, data]); //set tilt position
+    if(data !== false) {
+      sendServerCommand([ServerCommand.CmdTilt, data]); //set tilt position
+    }
   });
   document.getElementById('button_check').addEventListener('click', () => {
     sendServerCommand([ServerCommand.CmdCheck, 6]); //self check
