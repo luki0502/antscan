@@ -98,7 +98,7 @@ function wsConnect() {
           break;
         case 'point':
           console.info(msg.data);
-          document.getElementById('dataField').innerHTML = msg.data;
+          append(msg.data[3], msg.data[0]);
           break;
         default:
           break;
@@ -373,6 +373,7 @@ function app_status_handler(status) {
     case AppStatus.Stopped:
       document.getElementById('button_start').classList.add('disabled');
       document.getElementById('button_pause').classList.add('disabled');
+      document.getElementById('button_stop').classList.add('disabled');
       document.getElementById('button_calib').classList.remove('disabled');
       document.getElementById('button_headcmd').classList.remove('disabled');
       document.getElementById('button_data').classList.remove('disabled');
@@ -411,6 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('button_start').addEventListener('click', () => {
     sendServerCommand([ServerCommand.CmdStart, 1]); //start measurement loop
+    init_plot();
   });
   document.getElementById('button_pause').addEventListener('click', () => {
     sendServerCommand([ServerCommand.CmdPause, 2]); //pause measurement loop
@@ -436,6 +438,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('button_home').addEventListener('click', () => {
     sendServerCommand([ServerCommand.CmdHome, 7]); //home
   });
+  init_plot();
   /* Finally, connect to weather station */
   wsConnect();
 });

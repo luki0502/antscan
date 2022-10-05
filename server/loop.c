@@ -92,7 +92,7 @@ void measurement_loop()
                         uv_cond_wait(&cond_resume_measurement, &lock_pause_measurement);
                     }
                     uv_mutex_unlock(&lock_pause_measurement);
-                    app_measurement_point(n, m, freq[d].frequency, val);
+                    app_measurement_point((start_azimut + n) % 360, start_elev + m, freq[d].frequency, val);
                     uv_sleep(500);
                     if (measurement_thread_exit)
                     {
