@@ -98,7 +98,7 @@ function wsConnect() {
           break;
         case 'point':
           console.info(msg.data);
-          append(msg.data[3], msg.data[0]);
+          append(msg.data[0], msg.data[1], msg.data[2], msg.data[3]);
           break;
         default:
           break;
@@ -340,6 +340,8 @@ function createDataFrame() {
     return false;
   }
 
+  init_plot(testFrequency, testFrequency.length);
+
   return [ServerCommand.CmdCalib, filename, azAngle, azResolution, elStartAngle, elStopAngle, elResolution, startFrequency, stopFrequency, testFrequency, refGain, testFrequency.length];
 
 }
@@ -412,7 +414,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('button_start').addEventListener('click', () => {
     sendServerCommand([ServerCommand.CmdStart, 1]); //start measurement loop
-    init_plot();
   });
   document.getElementById('button_pause').addEventListener('click', () => {
     sendServerCommand([ServerCommand.CmdPause, 2]); //pause measurement loop

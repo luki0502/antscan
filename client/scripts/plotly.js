@@ -1,13 +1,18 @@
-let gain = [];
-let angle = [];
+let m_data = {};
 
-function init_plot(){
-    gain = [];
-    angle = [];
+function init_plot(testFrequency, len){
+    m_data = {};
+    for(let i = 0; i < len; i++) {
+        m_data[`${testFrequency[i]}`] = {
+            azimut: [],
+            elevation: [],
+            gain: []
+        }
+    }
     var data = [
         {
-            r: gain,
-            theta: angle,
+            r: [],
+            theta: [],
             mode: 'lines',
             line: {color: 'darkviolet'},
             type: 'scatterpolar'
@@ -15,7 +20,7 @@ function init_plot(){
     ]
 
     var layout = {
-        title: 'Measurement data',
+        title: 'Measurement',
         font: {
         family: 'Arial, sans-serif;',
         size: 12,
@@ -33,20 +38,21 @@ function init_plot(){
     Plotly.newPlot('dataField', data, layout);
 }
 
-function append(gain_val, angle_val) {
-    gain = gain.concat(gain_val);
-    angle = angle.concat(angle_val);
+function append(azimut, elevation, frequency, gain) {
+    m_data[`${frequency}`].azimut.push(azimut);
+    m_data[`${frequency}`].elevation.push(elevation);
+    m_data[`${frequency}`].gain.push(gain);
     data = [
         {
-            r: gain,
-            theta: angle,
+            r: m_data[`${frequency}`].gain,
+            theta: m_data[`${frequency}`].azimut,
             mode: 'lines',
             line: {color: 'darkviolet'},
             type: 'scatterpolar'
         }
     ]
     var layout = {
-        title: 'Measurement data',
+        title: 'Measurement data ' + `${frequency}` + 'MHz',
         font: {
           family: 'Arial, sans-serif;',
           size: 12,
