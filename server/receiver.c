@@ -70,12 +70,15 @@ void init_receiver(int start_freq, int stop_freq)
     status = viWrite(scopeHandle, (ViBuf)idnQuery, (ViUInt32)strlen(idnQuery), VI_NULL);
 }
 
-double measure(int measure_freq)
+void measure()
 {
     //Initiate measurement
     sprintf(idnQuery, "INIT;*WAI");
     status = viWrite(scopeHandle, (ViBuf)idnQuery, (ViUInt32)strlen(idnQuery), VI_NULL);
+}
 
+double get_data(int measure_freq)
+{
     //Position marker on x-axis
     sprintf(idnQuery, "CALC:MARK1:X %dMHz", measure_freq);
     status = viWrite(scopeHandle, (ViBuf)idnQuery, (ViUInt32)strlen(idnQuery), VI_NULL);

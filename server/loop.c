@@ -81,9 +81,10 @@ void measurement_loop()
             for(n = 0; n <= azimut_sector; n += resolution_azimut)
             {
                 set_pan_position(start_azimut + n);
+                measure();
                 for(int d = 0; d < freq_counter; d++)
                 {
-                    double val = measure(freq[d].frequency) + freq[d].reference_gain;
+                    double val = get_data(freq[d].frequency) + freq[d].reference_gain;
                     fprintf(freq[d].file_stream, "%.01lf;", val);
 
                     uv_mutex_lock(&lock_pause_measurement);
@@ -118,10 +119,12 @@ void measurement_loop()
             }
     }
     scan_status = STOPPED;
+    if(measurement_thread_exit == false) {
+        app_message("Scan process finished.", MSG_SUCCESS);
+        /* Kick out app message immediately */
+        lws_service(context, 0);
+    }
     measurement_thread_exit = false;
-    app_message("Scan process finished.", MSG_SUCCESS);
-    /* Kick out app message immediately */
-    lws_service(context, 0);
     /* App status is kicked via main loop */
     app_status();
     pthread_exit(0);

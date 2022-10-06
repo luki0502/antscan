@@ -10,6 +10,8 @@
 
 void init_receiver(int start_freq, int stop_freq);
 
-double measure(int measure_freq);
+void measure();
+
+double get_data(int measure_freq);
 
 #endif
