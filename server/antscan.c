@@ -92,7 +92,6 @@ int thread_to_core(int core_id)
  */
 static void json_parse_array(json_object *jarray, jarray_index_e key)
 {
-    int len = json_object_array_length(jarray);
     json_object *jvalue;
      for(int j = 0; j < freq_counter; j++) {
         jvalue = json_object_array_get_idx(jarray, j);
