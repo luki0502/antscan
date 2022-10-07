@@ -47,8 +47,11 @@ function append(azimut, elevation, frequency, gain) {
             r: m_data[`${frequency}`].gain,
             theta: m_data[`${frequency}`].azimut,
             mode: 'lines',
-            line: {color: 'darkviolet'},
-            type: 'scatterpolar'
+            line: {color: 'darkviolet',
+                   shape: 'spline',
+                   smoothing: 1.3},
+            type: 'scatterpolar',
+            hovertemplate: 'Gain: %{r:.1f}<br>Azimut: %{theta}'
         }
     ]
     var layout = {
