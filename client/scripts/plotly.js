@@ -42,7 +42,13 @@ function append(azimut, elevation, frequency, gain) {
     m_data[`${frequency}`].azimut.push(azimut);
     m_data[`${frequency}`].elevation.push(elevation);
     m_data[`${frequency}`].gain.push(gain);
-    data = [
+
+    draw_plot();
+}
+
+function draw_plot() {
+    var frequency = Object.keys(m_data)[liveDataStatus];
+    var data = [
         {
             r: m_data[`${frequency}`].gain,
             theta: m_data[`${frequency}`].azimut,

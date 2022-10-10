@@ -43,6 +43,8 @@ const ServerCommand = Object.freeze({
   CmdResult: 10
 });
 
+let liveDataStatus = 0;
+
 /* Websocket handle */
 let wsocket = null;
 /* Check for websocket API availability */
@@ -342,6 +344,8 @@ function createDataFrame() {
 
   init_plot(testFrequency, testFrequency.length);
 
+  init_dropdown(testFrequency, testFrequency.length);
+
   return [ServerCommand.CmdCalib, filename, azAngle, azResolution, elStartAngle, elStopAngle, elResolution, startFrequency, stopFrequency, testFrequency, refGain, testFrequency.length];
 
 }
@@ -398,6 +402,18 @@ function app_status_handler(status) {
       break;
     default:
       break;
+  }
+}
+
+function init_dropdown(frequency, len) {
+  var completeList = document.getElementById('list');
+
+  for(let i = 0; i < len; i++) {
+    completeList.innerHTML += "<li><button class='dropdown-item' type='button' id='dropdown" + i + "'>" + frequency[i] + " MHz</button></li>";
+    document.getElementById('dropdown' + i).addEventListener('click', () => {
+      liveDataStatus = i;
+      draw_plot();
+    });
   }
 }
 
