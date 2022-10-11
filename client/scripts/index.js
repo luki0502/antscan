@@ -249,6 +249,13 @@ function createDataFrame() {
     return false;
   }
   document.getElementById('inputAzimutResolution').classList.add('is-valid');
+  if(azAngle % azResolution != 0) {
+    document.getElementById('inputAzimutAngle').classList.remove('is-valid', 'is-invalid');
+    document.getElementById('inputAzimutResolution').classList.remove('is-valid', 'is-invalid');
+    document.getElementById('inputAzimutAngle').classList.add('is-invalid');
+    document.getElementById('inputAzimutResolution').classList.add('is-invalid');
+    return false;
+  }
 
   let elStartAngle = document.getElementById('inputElevStartAngle').valueAsNumber;
   document.getElementById('inputElevStartAngle').classList.remove('is-valid', 'is-invalid');
@@ -279,6 +286,15 @@ function createDataFrame() {
     return false;
   }
   document.getElementById('inputElevResolution').classList.add('is-valid');
+  if((Math.abs(elStartAngle - elStopAngle)) % elResolution != 0) {
+    document.getElementById('inputElevStartAngle').classList.remove('is-valid', 'is-invalid');
+    document.getElementById('inputElevStopAngle').classList.remove('is-valid', 'is-invlaid');
+    document.getElementById('inputElevResolution').classList.remove('is-valid', 'is-invlaid');
+    document.getElementById('inputElevStartAngle').classList.add('is-invalid');
+    document.getElementById('inputElevStopAngle').classList.add('is-invalid');
+    document.getElementById('inputElevResolution').classList.add('is-invalid');
+    return false;
+  }
 
   let startFrequency = document.getElementById('inputStartFrequency').valueAsNumber;
   document.getElementById('inputStartFrequency').classList.remove('is-valid', 'is-invalid');
