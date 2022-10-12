@@ -22,6 +22,7 @@ extern uv_cond_t cond_resume_measurement;
 extern bool measurement_thread_exit, measurement_thread_pause;
 extern scan_status_e scan_status;
 extern struct lws_context *context;
+double totalSteps, currentStep, azimutSteps, elevSteps, progress;
 
 void file_init()
 {
@@ -71,6 +72,11 @@ void file_init()
 void measurement_loop()
 {
     thread_to_core(2);
+    currentStep = 0;
+    progress = 0;
+    azimutSteps = (azimut_sector / resolution_azimut) + 1;
+    elevSteps = (abs(start_elev - stop_elev) / resolution_elev) + 1;
+    totalSteps = azimutSteps * elevSteps;
     for(m = start_elev; m <= stop_elev; m += resolution_elev)
     {
             set_tilt_position(m);
@@ -82,6 +88,8 @@ void measurement_loop()
             {
                 set_pan_position(start_azimut + n);
                 measure();
+                currentStep += 1;
+                progress = 100 * (currentStep / totalSteps);
                 for(int d = 0; d < freq_counter; d++)
                 {
                     double val = get_data(freq[d].frequency) + freq[d].reference_gain;
@@ -93,7 +101,7 @@ void measurement_loop()
                         uv_cond_wait(&cond_resume_measurement, &lock_pause_measurement);
                     }
                     uv_mutex_unlock(&lock_pause_measurement);
-                    app_measurement_point((start_azimut + n) % 360, start_elev + m, freq[d].frequency, val);
+                    app_measurement_point((start_azimut + n) % 360, start_elev + m, freq[d].frequency, val, progress);
                     uv_sleep(500);
                     if (measurement_thread_exit)
                     {

@@ -406,7 +406,7 @@ void app_status()
 /**
  * Forward measurement point to web application.
  */
-void app_measurement_point(int az, int el, int freq, double val)
+void app_measurement_point(int az, int el, int freq, double val, double progress)
 {
     size_t len = 0;
     json_object *jobj = json_object_new_object();
@@ -416,6 +416,7 @@ void app_measurement_point(int az, int el, int freq, double val)
     json_object_array_put_idx(jarr, 1, json_object_new_int(el));
     json_object_array_put_idx(jarr, 2, json_object_new_int(freq));
     json_object_array_put_idx(jarr, 3, json_object_new_double(val));
+    json_object_array_put_idx(jarr, 4, json_object_new_int(progress));
     json_object_object_add(jobj, "data", jarr);
     const char *p = json_object_to_json_string_length(jobj, JSON_C_TO_STRING_PLAIN, &len);
     memcpy(&pwsbuffer[LWS_SEND_BUFFER_PRE_PADDING], (unsigned char *)p, len);

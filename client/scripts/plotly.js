@@ -61,7 +61,7 @@ function draw_plot() {
         }
     ]
     var layout = {
-        title: 'Measurement data ' + `${frequency}` + 'MHz',
+        title: `Measurement data ${frequency}MHz`,
         font: {
           family: 'Arial, sans-serif;',
           size: 12,

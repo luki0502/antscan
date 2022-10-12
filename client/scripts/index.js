@@ -101,6 +101,9 @@ function wsConnect() {
         case 'point':
           console.info(msg.data);
           append(msg.data[0], msg.data[1], msg.data[2], msg.data[3]);
+          document.getElementById('progress').setAttribute("style", `width: ${msg.data[4]}%`);
+          document.getElementById('progress').innerHTML = `${msg.data[4]}%`;
+          document.getElementById('progress').setAttribute("aria-valuenow", `${msg.data[4]}`);
           break;
         default:
           break;
@@ -423,10 +426,21 @@ function app_status_handler(status) {
 
 function init_dropdown(frequency, len) {
   var completeList = document.getElementById('list');
-
+  var nodes = completeList.childElementCount;
+  for(let i = 0; i < nodes; i++) {
+    completeList.firstChild.remove();
+  }
   for(let i = 0; i < len; i++) {
-    completeList.innerHTML += "<li><button class='dropdown-item' type='button' id='dropdown" + i + "'>" + frequency[i] + " MHz</button></li>";
-    document.getElementById('dropdown' + i).addEventListener('click', () => {
+    var li = document.createElement("li");
+    var button = document.createElement("button");
+    button.classList.add('dropdown-item');
+    button.setAttribute("type", "button");
+    button.setAttribute("value", `${frequency[i]}`);
+    button.setAttribute("id", `${frequency[i]}`);
+    button.innerText = `${frequency[i]}MHz`;
+    li.appendChild(button);
+    completeList.appendChild(li);
+    document.getElementById(`${frequency[i]}`).addEventListener('click', () => {
       liveDataStatus = i;
       draw_plot();
     });
