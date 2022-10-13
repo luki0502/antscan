@@ -42,10 +42,8 @@ function append(azimut, elevation, frequency, gain) {
     m_data[`${frequency}`].azimut.push(azimut);
     m_data[`${frequency}`].elevation.push(elevation);
     m_data[`${frequency}`].gain.push(gain);
-
-    if(`${frequency}` == Object.keys(m_data)[liveDataStatus]) {
-        draw_plot();
-    }
+    
+    draw_plot();
 }
 
 function draw_plot() {
@@ -80,10 +78,28 @@ function draw_plot() {
 
     Plotly.react('dataField', predata, prelayout);
 
+    var data = built_data();
+    var layout = built_layout();
+
+    Plotly.react('dataField', data, layout);
+}
+
+function built_data() {
+    var frequency = Object.keys(m_data)[liveDataStatus];
+    var radius = [];
+    var theta2 = [];
+
+    for(let i = 0; i < m_data[frequency].gain.length; i++) {
+        if(m_data[frequency].elevation[i] == liveDataStatusEl) {
+            radius.push(m_data[frequency].gain[i]);
+            theta2.push(m_data[frequency].azimut[i]);
+        }
+    }
+
     var data = [
         {
-            r: m_data[frequency].gain,
-            theta: m_data[frequency].azimut,
+            r: radius,
+            theta: theta2,
             mode: 'lines',
             line: {color: 'darkviolet',
                    shape: 'spline',
@@ -92,8 +108,14 @@ function draw_plot() {
             hovertemplate: 'Gain: %{r:.1f}<br>Azimut: %{theta}'
         }
     ]
+
+    return data;
+}
+
+function built_layout() {
+    var frequency = Object.keys(m_data)[liveDataStatus];
     var layout = {
-        title: `Measurement data ${frequency}MHz`,
+        title: `Measurement data ${frequency}MHz, ${liveDataStatusEl}° elevation`,
         font: {
           family: 'Arial, sans-serif;',
           size: 12,
@@ -108,5 +130,5 @@ function draw_plot() {
         }
     };
 
-    Plotly.react('dataField', data, layout);
+    return layout;
 }

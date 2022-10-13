@@ -44,6 +44,7 @@ const ServerCommand = Object.freeze({
 });
 
 let liveDataStatus = 0;
+let liveDataStatusEl = 0;
 
 /* Websocket handle */
 let wsocket = null;
@@ -362,8 +363,8 @@ function createDataFrame() {
   }
 
   init_plot(testFrequency, testFrequency.length);
-
-  init_dropdown(testFrequency, testFrequency.length);
+  
+  init_dropdown(testFrequency, testFrequency.length, elStartAngle, elStopAngle, elResolution);
 
   return [ServerCommand.CmdCalib, filename, azAngle, azResolution, elStartAngle, elStopAngle, elResolution, startFrequency, stopFrequency, testFrequency, refGain, testFrequency.length];
 
@@ -424,8 +425,8 @@ function app_status_handler(status) {
   }
 }
 
-function init_dropdown(frequency, len) {
-  var completeList = document.getElementById('list');
+function init_dropdown(frequency, len, elStart, elStop, elRes) {
+  var completeList = document.getElementById('frequencyDropdown');
   var nodes = completeList.childElementCount;
   for(let i = 0; i < nodes; i++) {
     completeList.firstChild.remove();
@@ -445,6 +446,28 @@ function init_dropdown(frequency, len) {
       draw_plot();
     });
   }
+
+  completeList = document.getElementById('elevationDropdown');
+  nodes = completeList.childElementCount;
+  for(let i = 0; i < nodes; i++) {
+    completeList.firstChild.remove();
+  }
+  for(let i = elStart; i <= elStop; i+=elRes) {
+    var li = document.createElement("li");
+    var button = document.createElement("button");
+    button.classList.add('dropdown-item');
+    button.setAttribute("type", "button");
+    button.setAttribute("value", `${i}`);
+    button.setAttribute("id", `${i}el`);
+    button.innerText = `${i}°`;
+    li.appendChild(button);
+    completeList.appendChild(li);
+    document.getElementById(`${i}el`).addEventListener('click', () => {
+      liveDataStatusEl = i;
+      draw_plot();
+    })
+  }
+  liveDataStatusEl = elStart;
 }
 
 /**
@@ -454,6 +477,9 @@ document.addEventListener('DOMContentLoaded', () => {
   /* Add click event listeners to each button */
   document.getElementById('button_calib').addEventListener('click', () => {
     const data = createDataFrame();
+    document.getElementById('progress').setAttribute("style", "width: 0%");
+    document.getElementById('progress').innerHTML = "0%";
+    document.getElementById('progress').setAttribute("aria-valuenow", "0");
     if(data !== false) {
       sendServerCommand(data); //calib receiver
     }
