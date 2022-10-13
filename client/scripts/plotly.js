@@ -43,15 +43,47 @@ function append(azimut, elevation, frequency, gain) {
     m_data[`${frequency}`].elevation.push(elevation);
     m_data[`${frequency}`].gain.push(gain);
 
-    draw_plot();
+    if(`${frequency}` == Object.keys(m_data)[liveDataStatus]) {
+        draw_plot();
+    }
 }
 
 function draw_plot() {
     var frequency = Object.keys(m_data)[liveDataStatus];
+    var predata = [
+        {
+            r: [],
+            theta: [],
+            mode: 'lines',
+            line: {color: 'darkviolet',
+                   shape: 'spline',
+                   smoothing: 1.3},
+            type: 'scatterpolar',
+            hovertemplate: 'Gain: %{r:.1f}<br>Azimut: %{theta}'
+        }
+    ]
+    var prelayout = {
+        title: `Measurement data ${frequency}MHz`,
+        font: {
+          family: 'Arial, sans-serif;',
+          size: 12,
+          color: '#000'
+        },
+        showlegend: false,
+        polar: {
+            angularaxis: {
+                direction : "clockwise",
+                dtick: 30
+            }
+        }
+    };
+
+    Plotly.react('dataField', predata, prelayout);
+
     var data = [
         {
-            r: m_data[`${frequency}`].gain,
-            theta: m_data[`${frequency}`].azimut,
+            r: m_data[frequency].gain,
+            theta: m_data[frequency].azimut,
             mode: 'lines',
             line: {color: 'darkviolet',
                    shape: 'spline',
