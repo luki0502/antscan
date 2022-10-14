@@ -232,9 +232,12 @@ function sendServerCommand(data) {
 function createDataFrame() {
   let filename = document.getElementById('inputFilename').value;
   document.getElementById('inputFilename').classList.remove('is-valid', 'is-invalid');
-  if(filename.length === 0) {
+  if(filename.length > 25) {
     document.getElementById('inputFilename').classList.add('is-invalid');
     return false;
+  }
+  if(filename.length === 0) {
+    filename = "000000000000000000000000";
   }
   document.getElementById('inputFilename').classList.add('is-valid');
 
