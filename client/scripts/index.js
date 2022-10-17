@@ -45,6 +45,7 @@ const ServerCommand = Object.freeze({
 
 let liveDataStatus = 0;
 let liveDataStatusEl = 0;
+let liveDataStatusAz = 0;
 
 /* Websocket handle */
 let wsocket = null;
@@ -105,6 +106,8 @@ function wsConnect() {
           document.getElementById('progress').setAttribute("style", `width: ${msg.data[4]}%`);
           document.getElementById('progress').innerHTML = `${msg.data[4]}%`;
           document.getElementById('progress').setAttribute("aria-valuenow", `${msg.data[4]}`);
+          document.getElementById('currentAzimut').innerText = `Current Azimut: ${msg.data[0]}`;
+          document.getElementById('currentElevation').innerText = `Current Elevation: ${msg.data[1]}`;
           break;
         default:
           break;
@@ -367,7 +370,7 @@ function createDataFrame() {
 
   init_plot(testFrequency, testFrequency.length);
   
-  init_dropdown(testFrequency, testFrequency.length, elStartAngle, elStopAngle, elResolution);
+  init_dropdown(testFrequency, testFrequency.length, elStartAngle, elStopAngle, elResolution, azAngle, azResolution);
 
   return [ServerCommand.CmdCalib, filename, azAngle, azResolution, elStartAngle, elStopAngle, elResolution, startFrequency, stopFrequency, testFrequency, refGain, testFrequency.length];
 
@@ -428,10 +431,10 @@ function app_status_handler(status) {
   }
 }
 
-function init_dropdown(frequency, len, elStart, elStop, elRes) {
+function init_dropdown(frequency, len, elStart, elStop, elRes, azSector, azRes) {
   var completeList = document.getElementById('frequencyDropdown');
   var nodes = completeList.childElementCount;
-  for(let i = 0; i < nodes; i++) {
+  while(completeList.childElementCount != 0) {
     completeList.firstChild.remove();
   }
   for(let i = 0; i < len; i++) {
@@ -452,7 +455,7 @@ function init_dropdown(frequency, len, elStart, elStop, elRes) {
 
   completeList = document.getElementById('elevationDropdown');
   nodes = completeList.childElementCount;
-  for(let i = 0; i < nodes; i++) {
+  while(completeList.childElementCount != 0) {
     completeList.firstChild.remove();
   }
   for(let i = elStart; i <= elStop; i+=elRes) {
@@ -471,6 +474,32 @@ function init_dropdown(frequency, len, elStart, elStop, elRes) {
     })
   }
   liveDataStatusEl = elStart;
+
+  completeList = document.getElementById('azimutDropdown');
+  while(completeList.childElementCount != 0) {
+    completeList.firstChild.remove();
+  }
+  var azStart = ((360 - (azSector / 2.0)));
+  var azStop = azSector / 2.0;
+  if(azStop < azStart || azSector == 360) {
+    azStop += 360;
+  }
+  for(let i = azStart; i <= azStop; i+=azRes) {
+    var li = document.createElement("li");
+    var button = document.createElement("button");
+    button.classList.add('dropdown-item');
+    button.setAttribute("type", "button");
+    button.setAttribute("value", `${(i%360)}`);
+    button.setAttribute("id", `${(i%360)}az`);
+    button.innerText = `${(i%360)}°`;
+    li.appendChild(button);
+    completeList.appendChild(li);
+    document.getElementById(`${(i%360)}az`).addEventListener('click', () => {
+      liveDataStatusAz = i % 360;
+      draw_plot();
+    })
+  }
+  liveDataStatusAz = azStart;
 }
 
 /**
