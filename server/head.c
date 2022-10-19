@@ -141,11 +141,13 @@ void set_pan_position(uint16_t dec_input)
     }
     send_message();
     receive_response();
+    #ifdef REAL
     uint16_t val = 0;
     do
     {
         val = query_pan_position();
     } while (val > (dec_input % 360) + 1 || val < (dec_input % 360)-1);
+    #endif
 }
 
 void set_tilt_position(int16_t dec_input_signed)
@@ -174,11 +176,13 @@ void set_tilt_position(int16_t dec_input_signed)
     }
     send_message();
     receive_response();
+    #ifdef REAL
     int16_t val = 0;
     do
     {
         val = query_tilt_position();
     } while (val > (dec_input_signed) + 1 || val < (dec_input_signed)-1);
+    #endif
 }
 
 void self_check()
@@ -212,8 +216,14 @@ int send_message()
 {
     /* Wait for ready socket */
     poll(fds, 1, 3000);
+
     /* Send socket data */
-    int len = 0;//send(socket_desc, client_message, MSG_LENGHT, 0);
+    #ifdef REAL
+    int len = send(socket_desc, client_message, MSG_LENGHT, 0);
+    #else
+    int len = 0;
+    #endif
+
     if (len < 0)
     {
         printf("Unable to send message\n");
@@ -227,15 +237,21 @@ int receive_response()
 {
     /* Wait for ready socket */
     poll(fds, 1, 3000);
+
     /* Read socket buffer */
-    int response_lenght = 0;//recv(socket_desc, server_message, sizeof(server_message), 0);
-    if (response_lenght < 0)
+    #ifdef REAL
+    int response_length = recv(socket_desc, server_message, sizeof(server_message), 0);
+    #else
+    int response_length = 0;
+    #endif
+
+    if (response_length < 0)
     {
         printf("Error while receiving server's msg\n");
         return -1;
     }
 
-    return response_lenght;
+    return response_length;
 }
 
 void close_socket()

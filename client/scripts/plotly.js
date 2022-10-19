@@ -72,9 +72,9 @@ function init_plot(testFrequency, len){
           opacity:0.8,
           color:'rgb(300,100,200)',
           type: 'mesh3d',
-          x: [1,2,3,4,1],
-          y: [1,2,3,1,1],
-          z: [1,2,3,0,1],
+          x: [],
+          y: [],
+          z: [],
         }
     ];
 
@@ -303,7 +303,7 @@ function built_layout2() {
 }
 
 function built_data3d() {
-    var frequency = Object.keys[liveDataStatus];
+    var frequency = Object.keys(r_data)[liveDataStatus];
     var data = [
         {
           opacity:0.8,

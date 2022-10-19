@@ -1,14 +1,17 @@
 #include "receiver.h"
 
+#ifdef REAL
 static char idnQuery[] = "*IDN?\n";
 static ViStatus status = VI_SUCCESS;
 static ViUInt32 returnCount = 0;
 static ViSession rmHandle, scopeHandle;
 static char idnResponse[1024];
 static char ressourceString1[] = "TCPIP::192.168.1.128";
+#endif
 
 void init_receiver(int start_freq, int stop_freq)
 {
+    #ifdef REAL
     status = viOpenDefaultRM (&rmHandle);
 
     status = viOpen(rmHandle, ressourceString1, VI_NULL, VI_NULL, &scopeHandle);
@@ -68,17 +71,24 @@ void init_receiver(int start_freq, int stop_freq)
     //Run single
     sprintf(idnQuery, "INIT:CONT OFF");
     status = viWrite(scopeHandle, (ViBuf)idnQuery, (ViUInt32)strlen(idnQuery), VI_NULL);
+    #else
+    start_freq += 1;
+    stop_freq += 1;
+    #endif
 }
 
 void measure()
 {
+    #ifdef REAL
     //Initiate measurement
     sprintf(idnQuery, "INIT;*WAI");
     status = viWrite(scopeHandle, (ViBuf)idnQuery, (ViUInt32)strlen(idnQuery), VI_NULL);
+    #endif
 }
 
 double get_data(int measure_freq)
 {
+    #ifdef REAL
     //Position marker on x-axis
     sprintf(idnQuery, "CALC:MARK1:X %dMHz", measure_freq);
     status = viWrite(scopeHandle, (ViBuf)idnQuery, (ViUInt32)strlen(idnQuery), VI_NULL);
@@ -89,4 +99,8 @@ double get_data(int measure_freq)
     status = viRead(scopeHandle, (ViBuf)idnResponse, 1024, &returnCount);
     idnResponse[returnCount] = 0;
     return strtod(idnResponse, NULL);
+    #else
+    measure_freq += 1;
+    return 0;
+    #endif
 }

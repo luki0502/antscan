@@ -111,6 +111,8 @@ function wsConnect() {
           document.getElementById('progress3d').setAttribute("aria-valuenow", `${msg.data[4]}`);
           document.getElementById('currentAzimut').innerText = `Current Azimut: ${msg.data[0]}`;
           document.getElementById('currentElevation').innerText = `Current Elevation: ${msg.data[1]}`;
+          document.getElementById('currentAzimut3d').innerText = `Current Azimut: ${msg.data[0]}`;
+          document.getElementById('currentElevation3d').innerText = `Current Elevation: ${msg.data[1]}`;
           break;
         default:
           break;
@@ -412,6 +414,7 @@ function app_status_handler(status) {
       document.getElementById('button_calib').classList.remove('disabled');
       document.getElementById('button_headcmd').classList.remove('disabled');
       document.getElementById('button_data').classList.remove('disabled');
+      document.getElementById('button_data3d').classList.remove('disabled');
       document.getElementById('button_pause').classList.replace('btn-warning', 'btn-light');
       break;
     case AppStatus.Calibrated:
@@ -423,6 +426,7 @@ function app_status_handler(status) {
       document.getElementById('button_headcmd').classList.add('disabled');
       document.getElementById('button_stop').classList.remove('disabled');
       document.getElementById('button_data').classList.remove('disabled');
+      document.getElementById('button_data3d').classList.remove('disabled');
       document.getElementById('button_pause').classList.remove('disabled');
       document.getElementById('button_pause').classList.replace('btn-warning', 'btn-light');
       break;

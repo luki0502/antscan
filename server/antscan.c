@@ -18,6 +18,8 @@
 #include <netinet/in.h>
 #include "help.h"
 
+//#define REAL
+
 static error_t parse_opt(int key, char *arg, struct argp_state *state);
 const char *argp_program_version = "C Websocket Server Example";
 const char args_doc[] = "args doc";
@@ -557,11 +559,13 @@ int main(int argc, char **argv)
     }
 
     // Send connection request to server
-    /*if (connect_server() == -1)
+    #ifdef REAL
+    if (connect_server() == -1)
     {
         close_socket();
         return 0;
-    }*/
+    }
+    #endif
 
     /* Set default IP addresses and ports for all service. */
     inet_pton(AF_INET, ws_ip, &ws_in.sin_addr);

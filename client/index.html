@@ -266,16 +266,20 @@
                                             <br>
                                         </div>
                                         <div class="row">
-                                            <button class="btn btn-secondary disabled" type="submit"
-                                                id="currentAzimut">Current Azimut:</button>
+                                            <div class="col">
+                                                <button class="btn btn-secondary disabled" type="submit"
+                                                    id="currentAzimut">Current Azimut:</button>
+                                            </div>
                                         </div>
                                         <div class="row">
                                             <br>
                                             <br>
                                         </div>
                                         <div class="row">
-                                            <button class="btn btn-secondary disabled" type="submit"
-                                                id="currentElevation">Current Eleation:</button>
+                                            <div class="col">
+                                                <button class="btn btn-secondary disabled" type="submit"
+                                                    id="currentElevation">Current Eleation:</button>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="col" id="dataField"></div>
@@ -290,7 +294,8 @@
                 </div>
             </div>
             <div class="col">
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#liveData3dModal">
+                <button type="button" class="btn btn-primary disabled" id="button_data3d" data-bs-toggle="modal"
+                    data-bs-target="#liveData3dModal">
                     Live data 3D
                 </button>
 
@@ -317,13 +322,37 @@
                                 </div>
                                 <div class="row">
                                     <div class="col">
-                                        <button class="btn btn-primary dropdown-toggle" type="button"
-                                            data-bs-toggle="dropdown" aria-expanded="false">
-                                            Shown frequency
-                                        </button>
-                                        <ul class="dropdown-menu" id="frequencyDropdown3d">
+                                        <div class="row">
+                                            <div class="col">
+                                                <button class="btn btn-primary dropdown-toggle" type="button"
+                                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                                    Shown frequency
+                                                </button>
+                                                <ul class="dropdown-menu" id="frequencyDropdown3d">
 
-                                        </ul>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <br>
+                                            <br>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                <button class="btn btn-secondary disabled" type="submit"
+                                                    id="currentAzimut3d">Current Azimut:</button>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <br>
+                                            <br>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                <button class="btn btn-secondary disabled" type="submit"
+                                                    id="currentElevation3d">Current Eleation:</button>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="col" id="dataField3"></div>
                                 </div>

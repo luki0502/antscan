@@ -77,6 +77,9 @@ void measurement_loop()
     azimutSteps = (azimut_sector / resolution_azimut) + 1;
     elevSteps = (abs(start_elev - stop_elev) / resolution_elev) + 1;
     totalSteps = azimutSteps * elevSteps;
+    if(azimut_sector == 360) {
+        azimut_sector = 359;
+    }
     for(m = start_elev; m <= stop_elev; m += resolution_elev)
     {
             set_tilt_position(m);
@@ -92,7 +95,14 @@ void measurement_loop()
                 progress = 100 * (currentStep / totalSteps);
                 for(int d = 0; d < freq_counter; d++)
                 {
+                    #ifdef REAL
                     double val = get_data(freq[d].frequency) + freq[d].reference_gain;
+                    #else
+                    srand(time(NULL));
+                    //double val = (rand() % 20000) / 20000.0;
+                    double val = 3;
+                    #endif
+
                     fprintf(freq[d].file_stream, "%.01lf;", val);
 
                     uv_mutex_lock(&lock_pause_measurement);
