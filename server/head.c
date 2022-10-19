@@ -196,10 +196,12 @@ void self_check()
     client_message[6] = 0x7f;
     send_message();
     receive_response();
+    #ifdef REAL
     do
     {
         sleep(1);
     } while (query_pan_position() > 1 || query_tilt_position() > 1);
+    #endif
 }
 
 void home()
