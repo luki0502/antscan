@@ -1,4 +1,5 @@
 let m_data = {};
+let r_data = {};
 
 function init_plot(testFrequency, len){
     m_data = {};
@@ -7,6 +8,11 @@ function init_plot(testFrequency, len){
             azimut: [],
             elevation: [],
             gain: []
+        }
+        r_data[`${testFrequency[i]}`] = {
+            x: [],
+            y: [],
+            z: []
         }
     }
     var data = [
@@ -60,12 +66,54 @@ function init_plot(testFrequency, len){
 
     Plotly.newPlot('dataField', data, layout1);
     Plotly.newPlot('dataField2', data, layout2);
+
+    var data3d = [
+        {
+          opacity:0.8,
+          color:'rgb(300,100,200)',
+          type: 'mesh3d',
+          x: [1,2,3,4,1],
+          y: [1,2,3,1,1],
+          z: [1,2,3,0,1],
+        }
+    ];
+
+    Plotly.newPlot('dataField3', data3d);
+}
+
+function deg2rad(degree) {
+    var rad = degree * (Math.PI / 180);
+    return rad;
 }
 
 function append(azimut, elevation, frequency, gain) {
     m_data[`${frequency}`].azimut.push(azimut);
     m_data[`${frequency}`].elevation.push(elevation);
     m_data[`${frequency}`].gain.push(gain);
+
+    var xn = gain * Math.cos(deg2rad(elevation));
+    var yn = 0;
+    var zn = gain * Math.sin(deg2rad(elevation));
+
+    //Rotation Matrix X
+    var x = xn;
+    var y = Math.cos(deg2rad(azimut)) * yn - Math.sin(deg2rad(azimut)) * zn;
+    var z = Math.sin(deg2rad(azimut)) * yn + Math.cos(deg2rad(azimut)) * zn;
+
+    //remove last item
+    r_data[`${frequency}`].x.splice(-1, 1);
+    r_data[`${frequency}`].y.splice(-1, 1);
+    r_data[`${frequency}`].z.splice(-1, 1);
+
+    //append new values
+    r_data[`${frequency}`].x.push(x);
+    r_data[`${frequency}`].y.push(y);
+    r_data[`${frequency}`].z.push(z);
+
+    //add first item at the end
+    r_data[`${frequency}`].x.push(r_data[`${frequency}`].x[0]);
+    r_data[`${frequency}`].y.push(r_data[`${frequency}`].y[0]);
+    r_data[`${frequency}`].z.push(r_data[`${frequency}`].z[0]);
     
     draw_plot();
 }
@@ -123,16 +171,30 @@ function draw_plot() {
         }
     };
 
+    var predata3d = [
+        {
+          opacity:0.8,
+          color:'rgb(300,100,200)',
+          type: 'mesh3d',
+          x: [],
+          y: [],
+          z: [],
+        }
+    ];
+
     Plotly.react('dataField', predata, prelayout1);
     Plotly.react('dataField2', predata, prelayout2);
+    Plotly.react('dataField3', predata3d);
 
     var data1 = built_data1();
     var layout1 = built_layout1();
     var data2 = built_data2();
     var layout2 = built_layout2();
+    var data3d = built_data3d();
 
     Plotly.react('dataField', data1, layout1);
     Plotly.react('dataField2', data2, layout2);
+    Plotly.react('dataField3', data3d);
 }
 
 function built_data1() {
@@ -238,4 +300,20 @@ function built_layout2() {
     };
 
     return layout;
+}
+
+function built_data3d() {
+    var frequency = Object.keys[liveDataStatus];
+    var data = [
+        {
+          opacity:0.8,
+          color:'rgb(300,100,200)',
+          type: 'mesh3d',
+          x: r_data[`${frequency}`].x,
+          y: r_data[`${frequency}`].y,
+          z: r_data[`${frequency}`].z,
+        }
+    ];
+
+    return data;
 }

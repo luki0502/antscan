@@ -557,11 +557,11 @@ int main(int argc, char **argv)
     }
 
     // Send connection request to server
-    if (connect_server() == -1)
+    /*if (connect_server() == -1)
     {
         close_socket();
         return 0;
-    }
+    }*/
 
     /* Set default IP addresses and ports for all service. */
     inet_pton(AF_INET, ws_ip, &ws_in.sin_addr);

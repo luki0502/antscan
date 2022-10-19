@@ -106,6 +106,9 @@ function wsConnect() {
           document.getElementById('progress').setAttribute("style", `width: ${msg.data[4]}%`);
           document.getElementById('progress').innerHTML = `${msg.data[4]}%`;
           document.getElementById('progress').setAttribute("aria-valuenow", `${msg.data[4]}`);
+          document.getElementById('progress3d').setAttribute("style", `width: ${msg.data[4]}%`);
+          document.getElementById('progress3d').innerHTML = `${msg.data[4]}%`;
+          document.getElementById('progress3d').setAttribute("aria-valuenow", `${msg.data[4]}`);
           document.getElementById('currentAzimut').innerText = `Current Azimut: ${msg.data[0]}`;
           document.getElementById('currentElevation').innerText = `Current Elevation: ${msg.data[1]}`;
           break;
@@ -433,7 +436,26 @@ function app_status_handler(status) {
 
 function init_dropdown(frequency, len, elStart, elStop, elRes, azSector, azRes) {
   var completeList = document.getElementById('frequencyDropdown');
-  var nodes = completeList.childElementCount;
+  while(completeList.childElementCount != 0) {
+    completeList.firstChild.remove();
+  }
+  for(let i = 0; i < len; i++) {
+    var li = document.createElement("li");
+    var button = document.createElement("button");
+    button.classList.add('dropdown-item');
+    button.setAttribute("type", "button");
+    button.setAttribute("value", `${frequency[i]}`);
+    button.setAttribute("id", `${frequency[i]}`);
+    button.innerText = `${frequency[i]}MHz`;
+    li.appendChild(button);
+    completeList.appendChild(li);
+    document.getElementById(`${frequency[i]}`).addEventListener('click', () => {
+      liveDataStatus = i;
+      draw_plot();
+    });
+  }
+
+  completeList = document.getElementById('frequencyDropdown3d');
   while(completeList.childElementCount != 0) {
     completeList.firstChild.remove();
   }
@@ -454,7 +476,6 @@ function init_dropdown(frequency, len, elStart, elStop, elRes, azSector, azRes) 
   }
 
   completeList = document.getElementById('elevationDropdown');
-  nodes = completeList.childElementCount;
   while(completeList.childElementCount != 0) {
     completeList.firstChild.remove();
   }

@@ -213,7 +213,7 @@ int send_message()
     /* Wait for ready socket */
     poll(fds, 1, 3000);
     /* Send socket data */
-    int len = send(socket_desc, client_message, MSG_LENGHT, 0);
+    int len = 0;//send(socket_desc, client_message, MSG_LENGHT, 0);
     if (len < 0)
     {
         printf("Unable to send message\n");
@@ -228,7 +228,7 @@ int receive_response()
     /* Wait for ready socket */
     poll(fds, 1, 3000);
     /* Read socket buffer */
-    int response_lenght = recv(socket_desc, server_message, sizeof(server_message), 0);
+    int response_lenght = 0;//recv(socket_desc, server_message, sizeof(server_message), 0);
     if (response_lenght < 0)
     {
         printf("Error while receiving server's msg\n");
