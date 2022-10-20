@@ -1,9 +1,9 @@
 let m_data = {};
 let r_data = {};
 
-function init_plot(testFrequency, len){
+function init_plot(testFrequency, len) {
     m_data = {};
-    for(let i = 0; i < len; i++) {
+    for (let i = 0; i < len; i++) {
         m_data[`${testFrequency[i]}`] = {
             azimut: [],
             elevation: [],
@@ -20,7 +20,7 @@ function init_plot(testFrequency, len){
             r: [],
             theta: [],
             mode: 'lines',
-            line: {color: 'darkviolet'},
+            line: { color: 'darkviolet' },
             type: 'scatterpolar'
         }
     ]
@@ -31,14 +31,14 @@ function init_plot(testFrequency, len){
         height: 500,
         title: 'Measurement',
         font: {
-        family: 'Arial, sans-serif;',
-        size: 12,
-        color: '#000'
+            family: 'Arial, sans-serif;',
+            size: 12,
+            color: '#000'
         },
         showlegend: false,
         polar: {
             angularaxis: {
-                direction : "clockwise",
+                direction: "clockwise",
                 dtick: 30
             }
         }
@@ -50,15 +50,15 @@ function init_plot(testFrequency, len){
         height: 500,
         title: 'Measurement',
         font: {
-        family: 'Arial, sans-serif;',
-        size: 12,
-        color: '#000'
+            family: 'Arial, sans-serif;',
+            size: 12,
+            color: '#000'
         },
         showlegend: false,
         polar: {
-            sector: [0,180],
+            sector: [0, 180],
             angularaxis: {
-                direction : "clockwise",
+                direction: "clockwise",
                 dtick: 30
             }
         }
@@ -69,12 +69,12 @@ function init_plot(testFrequency, len){
 
     var data3d = [
         {
-          opacity:0.8,
-          color:'rgb(300,100,200)',
-          type: 'mesh3d',
-          x: [],
-          y: [],
-          z: [],
+            opacity: 0.8,
+            color: 'rgb(300,100,200)',
+            type: 'mesh3d',
+            x: [],
+            y: [],
+            z: [],
         }
     ];
 
@@ -114,7 +114,7 @@ function append(azimut, elevation, frequency, gain) {
     r_data[`${frequency}`].x.push(r_data[`${frequency}`].x[0]);
     r_data[`${frequency}`].y.push(r_data[`${frequency}`].y[0]);
     r_data[`${frequency}`].z.push(r_data[`${frequency}`].z[0]);
-    
+
     draw_plot();
 }
 
@@ -125,9 +125,11 @@ function draw_plot() {
             r: [],
             theta: [],
             mode: 'lines',
-            line: {color: 'darkviolet',
-                   shape: 'spline',
-                   smoothing: 1.3},
+            line: {
+                color: 'darkviolet',
+                shape: 'spline',
+                smoothing: 1.3
+            },
             type: 'scatterpolar',
             hovertemplate: 'Gain: %{r:.1f}<br>Azimut: %{theta}'
         }
@@ -138,14 +140,14 @@ function draw_plot() {
         height: 500,
         title: `Measurement data ${frequency}MHz`,
         font: {
-          family: 'Arial, sans-serif;',
-          size: 12,
-          color: '#000'
+            family: 'Arial, sans-serif;',
+            size: 12,
+            color: '#000'
         },
         showlegend: false,
         polar: {
             angularaxis: {
-                direction : "clockwise",
+                direction: "clockwise",
                 dtick: 30
             }
         }
@@ -157,15 +159,15 @@ function draw_plot() {
         height: 500,
         title: `Measurement data ${frequency}MHz`,
         font: {
-          family: 'Arial, sans-serif;',
-          size: 12,
-          color: '#000'
+            family: 'Arial, sans-serif;',
+            size: 12,
+            color: '#000'
         },
         showlegend: false,
         polar: {
-            sector: [0,180],
+            sector: [0, 180],
             angularaxis: {
-                direction : "clockwise",
+                direction: "clockwise",
                 dtick: 30
             }
         }
@@ -173,12 +175,12 @@ function draw_plot() {
 
     var predata3d = [
         {
-          opacity:0.8,
-          color:'rgb(300,100,200)',
-          type: 'mesh3d',
-          x: [],
-          y: [],
-          z: [],
+            opacity: 0.8,
+            color: 'rgb(300,100,200)',
+            type: 'mesh3d',
+            x: [],
+            y: [],
+            z: [],
         }
     ];
 
@@ -202,8 +204,8 @@ function built_data1() {
     var radius = [];
     var theta2 = [];
 
-    for(let i = 0; i < m_data[frequency].gain.length; i++) {
-        if(m_data[frequency].elevation[i] == liveDataStatusEl) {
+    for (let i = 0; i < m_data[frequency].gain.length; i++) {
+        if (m_data[frequency].elevation[i] == liveDataStatusEl) {
             radius.push(m_data[frequency].gain[i]);
             theta2.push(m_data[frequency].azimut[i]);
         }
@@ -214,9 +216,11 @@ function built_data1() {
             r: radius,
             theta: theta2,
             mode: 'lines',
-            line: {color: 'darkviolet',
-                   shape: 'spline',
-                   smoothing: 1.3},
+            line: {
+                color: 'darkviolet',
+                shape: 'spline',
+                smoothing: 1.3
+            },
             type: 'scatterpolar',
             hovertemplate: 'Gain: %{r:.1f}<br>Azimut: %{theta}'
         }
@@ -230,8 +234,8 @@ function built_data2() {
     var radius = [];
     var theta2 = [];
 
-    for(let i = 0; i < m_data[frequency].gain.length; i++) {
-        if(m_data[frequency].azimut[i] == liveDataStatusAz) {
+    for (let i = 0; i < m_data[frequency].gain.length; i++) {
+        if (m_data[frequency].azimut[i] == liveDataStatusAz) {
             radius.push(m_data[frequency].gain[i]);
             theta2.push(m_data[frequency].elevation[i]);
         }
@@ -242,9 +246,11 @@ function built_data2() {
             r: radius,
             theta: theta2,
             mode: 'lines',
-            line: {color: 'darkviolet',
-                   shape: 'spline',
-                   smoothing: 1.3},
+            line: {
+                color: 'darkviolet',
+                shape: 'spline',
+                smoothing: 1.3
+            },
             type: 'scatterpolar',
             hovertemplate: 'Gain: %{r:.1f}<br>Elevation: %{theta}'
         }
@@ -261,14 +267,14 @@ function built_layout1() {
         height: 500,
         title: `Measurement data ${frequency}MHz, ${liveDataStatusEl}° elevation`,
         font: {
-          family: 'Arial, sans-serif;',
-          size: 12,
-          color: '#000'
+            family: 'Arial, sans-serif;',
+            size: 12,
+            color: '#000'
         },
         showlegend: false,
         polar: {
             angularaxis: {
-                direction : "clockwise",
+                direction: "clockwise",
                 dtick: 30
             }
         }
@@ -285,15 +291,15 @@ function built_layout2() {
         height: 500,
         title: `Measurement data ${frequency}MHz, ${liveDataStatusAz}° azimut`,
         font: {
-          family: 'Arial, sans-serif;',
-          size: 12,
-          color: '#000'
+            family: 'Arial, sans-serif;',
+            size: 12,
+            color: '#000'
         },
         showlegend: false,
         polar: {
-            sector: [0,180],
+            sector: [0, 180],
             angularaxis: {
-                direction : "clockwise",
+                direction: "clockwise",
                 dtick: 30
             }
         }
@@ -306,12 +312,13 @@ function built_data3d() {
     var frequency = Object.keys(r_data)[liveDataStatus];
     var data = [
         {
-          opacity:0.8,
-          color:'rgb(300,100,200)',
-          type: 'mesh3d',
-          x: r_data[`${frequency}`].x,
-          y: r_data[`${frequency}`].y,
-          z: r_data[`${frequency}`].z,
+            alphahull: 0,
+            opacity: 0.8,
+            color: 'rgb(300,100,200)',
+            type: 'mesh3d',
+            x: r_data[`${frequency}`].x,
+            y: r_data[`${frequency}`].y,
+            z: r_data[`${frequency}`].z,
         }
     ];
 

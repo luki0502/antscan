@@ -72,14 +72,15 @@ void file_init()
 void measurement_loop()
 {
     thread_to_core(2);
+    srand(time(NULL));
+    if(azimut_sector == 360) {
+        azimut_sector = 359;
+    }
     currentStep = 0;
     progress = 0;
     azimutSteps = (azimut_sector / resolution_azimut) + 1;
     elevSteps = (abs(start_elev - stop_elev) / resolution_elev) + 1;
     totalSteps = azimutSteps * elevSteps;
-    if(azimut_sector == 360) {
-        azimut_sector = 359;
-    }
     for(m = start_elev; m <= stop_elev; m += resolution_elev)
     {
             set_tilt_position(m);
@@ -98,7 +99,6 @@ void measurement_loop()
                     #ifdef REAL
                     double val = get_data(freq[d].frequency) + freq[d].reference_gain;
                     #else
-                    srand(time(NULL));
                     //double val = (rand() % 20000) / 20000.0;
                     double val = 3;
                     #endif
