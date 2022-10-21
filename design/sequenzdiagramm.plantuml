@@ -1,0 +1,28 @@
+@startuml Sequenzdiagramm
+
+actor user
+participant HTML
+participant JavaScript as JS
+participant C
+participant Receiver
+participant Head
+
+user -> HTML : data input
+HTML -> JS : configuration data
+JS -> C : configuration data
+user -> HTML : start
+HTML -> JS : start
+JS -> C : start
+loop Measurement
+    C -> Head : position
+    activate Head
+    C -> Receiver : measure
+    activate Receiver
+    Receiver -> C : measurement data
+    C -> JS : measurement data
+    JS -> HTML : display data
+    deactivate Head
+    deactivate Receiver
+end
+
+@enduml

@@ -1,0 +1,19 @@
+@startuml Komponentendiagramm
+
+[C] as C
+[User Interface] as HTML
+[JavaScript] as JS
+[Head] as SK
+[Receiver] as ME
+interface "WebSocket" as WS
+actor "User" as user
+
+HTML <-> JS
+JS - WS
+WS - C
+user -down-> HTML
+C <-down-> ME
+C <-up-> SK
+
+
+@enduml

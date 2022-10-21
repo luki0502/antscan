@@ -1,0 +1,33 @@
+@startuml Zustandsdiagramm
+
+[*] --> Stoped
+Stoped --> Calibrated : "Calibrate"
+Stoped --> HeadCommands : "Head"
+Calibrated --> Running : "Start"
+Running --> Paused : "Pause"
+Running --> Stoped : "Stop"
+Paused --> Running : "Pause"
+Stoped --> LiveData : "Live Data"
+Running --> LiveData : "Live Data"
+Paused --> LiveData : "Live Data"
+
+Stoped : data input
+Stoped : disable button Start
+Stoped : disable button Stop
+Stoped : disable button Pause
+
+Calibrated : enable button Start
+
+HeadCommands : open modal Head commands
+
+Running : run measurement loop
+Running : update measurement data
+Running : enable button Pause
+Running : enable button Stop
+
+Paused : pause measurement loop
+
+LiveData : open modal Live Data
+LiveData : update Live Data Plots
+
+@enduml
