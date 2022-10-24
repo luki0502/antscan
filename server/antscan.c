@@ -541,7 +541,9 @@ void clean_exit(Frequency* freq, int freq_counter)
 
     for(int f = 0; f < freq_counter; f++)
     {
-        fclose(freq[f].file_stream);
+        if(freq[f].file_stream != NULL) {
+            fclose(freq[f].file_stream);
+        }
     }
 
     free(freq);
