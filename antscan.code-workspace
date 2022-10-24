@@ -25,7 +25,9 @@
 			"string_view": "c",
 			"antscan.h": "c",
 			"string.h": "c",
-			"time.h": "c"
+			"time.h": "c",
+			"receiver.h": "c",
+			"libwebsockets.h": "c"
 		}
 	}
 }
