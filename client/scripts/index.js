@@ -87,8 +87,19 @@ function wsConnect() {
         case 'success':
           showToast(msg.data, ToastType.Success);
           if(msg.data == 'Scan process finished.') {
-            document.getElementById('time').innerHTML = `Total Time: ${totalHours}:${totalMinutes}:${totalSeconds}`;
-            document.getElementById('time3d').innerHTML = `Total Time: ${totalHours}:${totalMinutes}:${totalSeconds}`;
+            if(totalMinutes < 10 && totalSeconds < 10) {
+              document.getElementById('time').innerHTML = `Total Time: ${totalHours}:0${totalMinutes}:0${totalSeconds}`;
+            document.getElementById('time3d').innerHTML = `Total Time: ${totalHours}:0${totalMinutes}:0${totalSeconds}`;
+            } else if (totalMinutes < 10) {
+              document.getElementById('time').innerHTML = `Total Time: ${totalHours}:0${totalMinutes}:${totalSeconds}`;
+              document.getElementById('time3d').innerHTML = `Total Time: ${totalHours}:0${totalMinutes}:${totalSeconds}`;
+            } else if(totalSeconds < 10) {
+              document.getElementById('time').innerHTML = `Total Time: ${totalHours}:${totalMinutes}:0${totalSeconds}`;
+              document.getElementById('time3d').innerHTML = `Total Time: ${totalHours}:${totalMinutes}:0${totalSeconds}`;
+            } else {
+              document.getElementById('time').innerHTML = `Total Time: ${totalHours}:${totalMinutes}:${totalSeconds}`;
+              document.getElementById('time3d').innerHTML = `Total Time: ${totalHours}:${totalMinutes}:${totalSeconds}`;
+            }
           }
           break;
         case 'info':
@@ -142,8 +153,19 @@ function wsConnect() {
           timeLeft -= minutesLeft;
           minutesLeft /= 60;
           hoursLeft = timeLeft / 3600;
-          document.getElementById('time').innerHTML = `Time Left: ${hoursLeft}:${minutesLeft}:${secondsLeft}`;
-          document.getElementById('time3d').innerHTML = `Time Left: ${hoursLeft}:${minutesLeft}:${secondsLeft}`;
+          if(minutesLeft < 10 && secondsLeft < 10) {
+            document.getElementById('time').innerHTML = `Time Left: ${hoursLeft}:0${minutesLeft}:0${secondsLeft}`;
+            document.getElementById('time3d').innerHTML = `Time Left: ${hoursLeft}:0${minutesLeft}:0${secondsLeft}`;
+          } else if(minutesLeft < 10) {
+            document.getElementById('time').innerHTML = `Time Left: ${hoursLeft}:0${minutesLeft}:${secondsLeft}`;
+            document.getElementById('time3d').innerHTML = `Time Left: ${hoursLeft}:0${minutesLeft}:${secondsLeft}`;
+          } else if(secondsLeft < 10) {
+            document.getElementById('time').innerHTML = `Time Left: ${hoursLeft}:${minutesLeft}:0${secondsLeft}`;
+            document.getElementById('time3d').innerHTML = `Time Left: ${hoursLeft}:${minutesLeft}:0${secondsLeft}`;
+          } else {
+            document.getElementById('time').innerHTML = `Time Left: ${hoursLeft}:${minutesLeft}:${secondsLeft}`;
+            document.getElementById('time3d').innerHTML = `Time Left: ${hoursLeft}:${minutesLeft}:${secondsLeft}`;
+          }
           break;
         default:
           break;
