@@ -22,6 +22,7 @@ extern uv_cond_t cond_resume_measurement;
 extern bool measurement_thread_exit, measurement_thread_pause;
 extern scan_status_e scan_status;
 extern struct lws_context *context;
+extern double time_paused;
 double totalSteps, currentStep, azimutSteps, elevSteps, progress;
 double startTime, currentTime, timeOneStep, totalTime, timeLeft, elapsedTime;
 
@@ -126,7 +127,7 @@ void measurement_loop()
                 now = time(NULL);
                 t = localtime(&now);
                 currentTime = (t->tm_hour * 3600) + (t->tm_min * 60) + t->tm_sec;
-                elapsedTime = currentTime - startTime;
+                elapsedTime = currentTime - startTime - time_paused;
                 timeOneStep = elapsedTime / currentStep;
                 totalTime = timeOneStep * totalSteps;
                 timeLeft = totalTime - elapsedTime;

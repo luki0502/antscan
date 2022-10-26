@@ -43,6 +43,9 @@ uv_cond_t cond_resume_measurement;
 bool measurement_thread_exit = false;
 bool measurement_thread_pause = false;
 uv_thread_t measurement_thread;
+time_t now2;
+struct tm* t2;
+double pause_start, pause_stop, time_paused = 0;
 
 int start_f, stop_f, freq_counter = 0;
 char file_name[25];
@@ -194,6 +197,9 @@ static void handle_client_request(void *in, size_t len)
                 uv_mutex_lock(&lock_pause_measurement);
                 measurement_thread_pause = true;
                 uv_mutex_unlock(&lock_pause_measurement);
+                now2 = time(NULL);
+                t2 = localtime(&now2);
+                pause_start = (t2->tm_hour * 3600) + (t2->tm_min * 60) + t2->tm_sec;
                 app_message("Measurement paused", MSG_WARNING);
                 lws_service(context, 0);
                 scan_status = PAUSED;
@@ -206,6 +212,10 @@ static void handle_client_request(void *in, size_t len)
                 measurement_thread_pause = false;
                 uv_cond_broadcast(&cond_resume_measurement);
                 uv_mutex_unlock(&lock_pause_measurement);
+                now2 = time(NULL);
+                t2 = localtime(&now2);
+                pause_stop = (t2->tm_hour * 3600) + (t2->tm_min * 60) + t2->tm_sec;
+                time_paused += pause_stop - pause_start;
                 app_message("Measurement continued", MSG_SUCCESS);
                 lws_service(context, 0);
                 scan_status = RUNNING;
