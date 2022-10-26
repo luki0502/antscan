@@ -182,7 +182,7 @@ static void handle_client_request(void *in, size_t len)
                 app_message("Reference antenna not calibrated.", MSG_DANGER);
                 lws_service(context, 0);
             }
-            app_message("Mesaurement started", MSG_SUCCESS);
+            app_message("Measurement started", MSG_SUCCESS);
             lws_service(context, 0);
             scan_status = RUNNING;
             app_status();
@@ -408,7 +408,7 @@ void app_status()
 /**
  * Forward measurement point to web application.
  */
-void app_measurement_point(int az, int el, int freq, double val, double progress)
+void app_measurement_point(int az, int el, int freq, double val)
 {
     size_t len = 0;
     json_object *jobj = json_object_new_object();
@@ -418,7 +418,24 @@ void app_measurement_point(int az, int el, int freq, double val, double progress
     json_object_array_put_idx(jarr, 1, json_object_new_int(el));
     json_object_array_put_idx(jarr, 2, json_object_new_int(freq));
     json_object_array_put_idx(jarr, 3, json_object_new_double(val));
-    json_object_array_put_idx(jarr, 4, json_object_new_int(progress));
+    json_object_object_add(jobj, "data", jarr);
+    const char *p = json_object_to_json_string_length(jobj, JSON_C_TO_STRING_PLAIN, &len);
+    memcpy(&pwsbuffer[LWS_SEND_BUFFER_PRE_PADDING], (unsigned char *)p, len);
+    wsbuffer_len = len;
+    lws_callback_on_writable_all_protocol(context, &protocols[1]);
+    /* Send measurement point immediately to web application */
+    lws_service(context, 0);
+}
+
+void app_progress(double progress, double totalTime, double timeLeft)
+{
+    size_t len = 0;
+    json_object *jobj = json_object_new_object();
+    json_object_object_add(jobj, "cmd", json_object_new_string("progress"));
+    json_object *jarr = json_object_new_array();
+    json_object_array_put_idx(jarr, 0, json_object_new_int(progress));
+    json_object_array_put_idx(jarr, 1, json_object_new_int(totalTime));
+    json_object_array_put_idx(jarr, 2, json_object_new_int(timeLeft));
     json_object_object_add(jobj, "data", jarr);
     const char *p = json_object_to_json_string_length(jobj, JSON_C_TO_STRING_PLAIN, &len);
     memcpy(&pwsbuffer[LWS_SEND_BUFFER_PRE_PADDING], (unsigned char *)p, len);

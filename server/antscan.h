@@ -69,5 +69,6 @@ typedef struct Frequencies
 void clean_exit(Frequency* freq, int freq_counter);
 void app_message(const char *msg, app_msg_type_e type);
 void app_status();
-void app_measurement_point(int az, int el, int freq, double val, double progress);
+void app_measurement_point(int az, int el, int freq, double val);
+void app_progress(double progress, double totalTime, double timeLeft);
 int thread_to_core(int core_id);

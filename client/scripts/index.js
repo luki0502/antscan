@@ -46,6 +46,11 @@ const ServerCommand = Object.freeze({
 let liveDataStatus = 0;
 let liveDataStatusEl = 0;
 let liveDataStatusAz = 0;
+let totalTime, totalSeconds, totalMinutes, totalHours, timeLeft, secondsLeft, minutesLeft, hoursLeft;
+
+function make_time(){
+  
+}
 
 /* Websocket handle */
 let wsocket = null;
@@ -81,12 +86,20 @@ function wsConnect() {
           break;
         case 'success':
           showToast(msg.data, ToastType.Success);
+          if(msg.data == 'Scan process finished.') {
+            document.getElementById('time').innerHTML = `Total Time: ${totalHours}:${totalMinutes}:${totalSeconds}`;
+            document.getElementById('time3d').innerHTML = `Total Time: ${totalHours}:${totalMinutes}:${totalSeconds}`;
+          }
           break;
         case 'info':
           showToast(msg.data, ToastType.Info);
           break;
         case 'warning':
           showToast(msg.data, ToastType.Warning);
+          if(msg.data == 'Measurement paused') {
+            document.getElementById('time').innerText = 'Time Left: paused';
+            document.getElementById('time3d').innerText = 'Time Left: paused';
+          }
           break;
         case 'danger':
           showToast(msg.data, ToastType.Danger);
@@ -103,16 +116,34 @@ function wsConnect() {
         case 'point':
           console.info(msg.data);
           append(msg.data[0], msg.data[1], msg.data[2], msg.data[3]);
-          document.getElementById('progress').setAttribute("style", `width: ${msg.data[4]}%`);
-          document.getElementById('progress').innerHTML = `${msg.data[4]}%`;
-          document.getElementById('progress').setAttribute("aria-valuenow", `${msg.data[4]}`);
-          document.getElementById('progress3d').setAttribute("style", `width: ${msg.data[4]}%`);
-          document.getElementById('progress3d').innerHTML = `${msg.data[4]}%`;
-          document.getElementById('progress3d').setAttribute("aria-valuenow", `${msg.data[4]}`);
           document.getElementById('currentAzimut').innerText = `Current Azimut: ${msg.data[0]}`;
           document.getElementById('currentElevation').innerText = `Current Elevation: ${msg.data[1]}`;
           document.getElementById('currentAzimut3d').innerText = `Current Azimut: ${msg.data[0]}`;
           document.getElementById('currentElevation3d').innerText = `Current Elevation: ${msg.data[1]}`;
+          break;
+        case 'progress':
+          document.getElementById('progress').setAttribute("style", `width: ${msg.data[0]}%`);
+          document.getElementById('progress').innerHTML = `${msg.data[0]}%`;
+          document.getElementById('progress').setAttribute("aria-valuenow", `${msg.data[0]}`);
+          document.getElementById('progress3d').setAttribute("style", `width: ${msg.data[0]}%`);
+          document.getElementById('progress3d').innerHTML = `${msg.data[0]}%`;
+          document.getElementById('progress3d').setAttribute("aria-valuenow", `${msg.data[0]}`);
+          totalTime = msg.data[1];
+          totalSeconds = totalTime % 60;
+          totalTime -= totalSeconds;
+          totalMinutes = totalTime % 3600;
+          totalTime -= totalMinutes;
+          totalMinutes /= 60;
+          totalHours = totalTime / 3600;
+          timeLeft = msg.data[2];
+          secondsLeft = timeLeft % 60;
+          timeLeft -= secondsLeft;
+          minutesLeft = timeLeft % 3600;
+          timeLeft -= minutesLeft;
+          minutesLeft /= 60;
+          hoursLeft = timeLeft / 3600;
+          document.getElementById('time').innerHTML = `Time Left: ${hoursLeft}:${minutesLeft}:${secondsLeft}`;
+          document.getElementById('time3d').innerHTML = `Time Left: ${hoursLeft}:${minutesLeft}:${secondsLeft}`;
           break;
         default:
           break;
