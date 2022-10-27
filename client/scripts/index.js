@@ -89,7 +89,7 @@ function wsConnect() {
           if(msg.data == 'Scan process finished.') {
             if(totalMinutes < 10 && totalSeconds < 10) {
               document.getElementById('time').innerHTML = `Total Time: ${totalHours}:0${totalMinutes}:0${totalSeconds}`;
-            document.getElementById('time3d').innerHTML = `Total Time: ${totalHours}:0${totalMinutes}:0${totalSeconds}`;
+              document.getElementById('time3d').innerHTML = `Total Time: ${totalHours}:0${totalMinutes}:0${totalSeconds}`;
             } else if (totalMinutes < 10) {
               document.getElementById('time').innerHTML = `Total Time: ${totalHours}:0${totalMinutes}:${totalSeconds}`;
               document.getElementById('time3d').innerHTML = `Total Time: ${totalHours}:0${totalMinutes}:${totalSeconds}`;
