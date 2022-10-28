@@ -100,6 +100,12 @@ function wsConnect() {
               document.getElementById('time').innerHTML = `Total Time: ${totalHours}:${totalMinutes}:${totalSeconds}`;
               document.getElementById('time3d').innerHTML = `Total Time: ${totalHours}:${totalMinutes}:${totalSeconds}`;
             }
+            document.getElementById('time').classList.replace('btn-outline-danger', 'btn-outline-success');
+            document.getElementById('time3d').classList.replace('btn-outline-danger', 'btn-outline-success');
+          } else if(msg.data == 'Home Position') {
+            document.getElementById('button_home').classList.remove('disabled');
+          } else if(msg.data == 'Self-Check finished') {
+            document.getElementById('button_check').classList.remove('disabled');
           }
           break;
         case 'info':
@@ -107,10 +113,6 @@ function wsConnect() {
           break;
         case 'warning':
           showToast(msg.data, ToastType.Warning);
-          if(msg.data == 'Measurement paused') {
-            document.getElementById('time').innerText = 'Time Left: paused';
-            document.getElementById('time3d').innerText = 'Time Left: paused';
-          }
           break;
         case 'danger':
           showToast(msg.data, ToastType.Danger);
@@ -601,12 +603,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('button_start').addEventListener('click', () => {
     sendServerCommand([ServerCommand.CmdStart, 1]); //start measurement loop
+    document.getElementById('time').classList.replace('btn-outline-success', 'btn-outline-danger');
+    document.getElementById('time3d').classList.replace('btn-outline-success', 'btn-outline-danger');
   });
   document.getElementById('button_pause').addEventListener('click', () => {
     sendServerCommand([ServerCommand.CmdPause, 2]); //pause measurement loop
   });
   document.getElementById('button_stop').addEventListener('click', () => {
     sendServerCommand([ServerCommand.CmdStop, 3]); //stop measurement loop
+    document.getElementById('time').innerHTML = `Time Left: 0:00:00`;
+    document.getElementById('time3d').innerHTML = `Time Left: 0:00:00`;
   });
   document.getElementById('button_pan').addEventListener('click', () => {
     const data = createPanData();
@@ -622,9 +628,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('button_check').addEventListener('click', () => {
     sendServerCommand([ServerCommand.CmdCheck, 6]); //self check
+    document.getElementById('button_check').classList.add('disabled');
   });
   document.getElementById('button_home').addEventListener('click', () => {
     sendServerCommand([ServerCommand.CmdHome, 7]); //home
+    document.getElementById('button_home').classList.add('disabled');
   });
   init_plot();
   /* Finally, connect to weather station */
