@@ -11,6 +11,9 @@ Paused --> Running : "Pause"
 Stoped --> LiveData : "Live Data"
 Running --> LiveData : "Live Data"
 Paused --> LiveData : "Live Data"
+LiveData --> Stoped
+LiveData --> Running
+LiveData --> Paused
 
 Stoped : data input
 Stoped : disable button Start
