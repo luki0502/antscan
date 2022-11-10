@@ -27,7 +27,8 @@
 			"string.h": "c",
 			"time.h": "c",
 			"receiver.h": "c",
-			"libwebsockets.h": "c"
+			"libwebsockets.h": "c",
+			"help.h": "c"
 		}
 	}
 }

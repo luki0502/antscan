@@ -87,6 +87,9 @@ function deg2rad(degree) {
 }
 
 function append(azimut, elevation, frequency, gain) {
+    gain = parseFloat(gain.toFixed(1));
+    console.info(`rounded gain: ${gain}`);
+
     m_data[`${frequency}`].azimut.push(azimut);
     m_data[`${frequency}`].elevation.push(elevation);
     m_data[`${frequency}`].gain.push(gain);

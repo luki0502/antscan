@@ -8,6 +8,8 @@
 #include "head.h"
 #include "receiver.h"
 
+#include "real.h"
+
 extern int start_f, stop_f, freq_counter;
 extern int measure_f[5];
 extern char file_name[25];
@@ -57,6 +59,9 @@ void file_init()
 
         fprintf(freq[b].file_stream, "START_FREQ:%d;STOP_FREQ:%d;MEASURE_FREQ:%d;REF_GAIN:%lf;\n", start_f, stop_f, freq[b].frequency, freq[b].reference_gain);
         fputs("TILT/PAN;", freq[b].file_stream);
+        if(azimut_sector == 360) {
+            azimut_sector = 359;
+        }
         for(int i = 0; i <= azimut_sector; i += resolution_azimut)
         {
             if(start_azimut >= 180)
@@ -156,6 +161,13 @@ void measurement_loop()
         lws_service(context, 0);
     }
     measurement_thread_exit = false;
+    for(int f = 0; f < freq_counter; f++)
+    {
+        if(freq[f].file_stream != NULL) {
+            fclose(freq[f].file_stream);
+        }
+    }
+    free(freq);
     /* App status is kicked via main loop */
     app_status();
     pthread_exit(0);

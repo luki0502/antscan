@@ -1,5 +1,7 @@
 #include "receiver.h"
 
+#include "real.h"
+
 #ifdef REAL
 static char idnQuery[] = "*IDN?\n";
 static ViStatus status = VI_SUCCESS;
