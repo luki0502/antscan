@@ -432,7 +432,6 @@ function createDataFrame() {
   
   init_dropdown(testFrequency, testFrequency.length, elStartAngle, elStopAngle, elResolution, azAngle, azResolution);
 
-  console.info([ServerCommand.CmdCalib, filename, azAngle, azResolution, elStartAngle, elStopAngle, elResolution, startFrequency, stopFrequency, testFrequency, refGain, testFrequency.length]);
   return [ServerCommand.CmdCalib, filename, azAngle, azResolution, elStartAngle, elStopAngle, elResolution, startFrequency, stopFrequency, testFrequency, refGain, testFrequency.length];
 
 }
