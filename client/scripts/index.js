@@ -411,7 +411,7 @@ function createDataFrame() {
     return false;
   }
   for(let i = 0; i < refGain.length; i++) {
-    let g_val = Number.parseInt(refGain[i], 10);
+    let g_val = Number.parseFloat(refGain[i], 10);
     if(g_val < -100 || g_val > 100 || Number.isNaN(g_val)) {
       document.getElementById('inputGainRefAntenna').classList.add('is-invalid');
       return false;
@@ -432,6 +432,7 @@ function createDataFrame() {
   
   init_dropdown(testFrequency, testFrequency.length, elStartAngle, elStopAngle, elResolution, azAngle, azResolution);
 
+  console.info([ServerCommand.CmdCalib, filename, azAngle, azResolution, elStartAngle, elStopAngle, elResolution, startFrequency, stopFrequency, testFrequency, refGain, testFrequency.length]);
   return [ServerCommand.CmdCalib, filename, azAngle, azResolution, elStartAngle, elStopAngle, elResolution, startFrequency, stopFrequency, testFrequency, refGain, testFrequency.length];
 
 }

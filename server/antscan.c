@@ -103,7 +103,7 @@ static void json_parse_array(json_object *jarray, jarray_index_e key)
         if(key == TEST_FREQUENCY) {
             freq[j].frequency = json_object_get_int(jvalue);
         } else if(key == REFERENCE_GAIN) {
-            freq[j].reference_gain = json_object_get_int(jvalue);
+            freq[j].reference_gain = json_object_get_double(jvalue);
         }
     }
 }
