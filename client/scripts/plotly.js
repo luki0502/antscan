@@ -196,10 +196,11 @@ function draw_plot() {
     var data2 = built_data2();
     var layout2 = built_layout2();
     var data3d = built_data3d();
+    var layout3d = {title: `Measurement data ${frequency}MHz`};
 
     Plotly.react('dataField', data1, layout1);
     Plotly.react('dataField2', data2, layout2);
-    Plotly.react('dataField3', data3d);
+    Plotly.react('dataField3', {data: data3d, layout: layout3d});
 }
 
 function built_data1() {

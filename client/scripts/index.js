@@ -529,11 +529,11 @@ function init_dropdown(frequency, len, elStart, elStop, elRes, azSector, azRes) 
     button.classList.add('dropdown-item');
     button.setAttribute("type", "button");
     button.setAttribute("value", `${frequency[i]}`);
-    button.setAttribute("id", `${frequency[i]}`);
+    button.setAttribute("id", `${frequency[i]}3d`);
     button.innerText = `${frequency[i]}MHz`;
     li.appendChild(button);
     completeList.appendChild(li);
-    document.getElementById(`${frequency[i]}`).addEventListener('click', () => {
+    document.getElementById(`${frequency[i]}3d`).addEventListener('click', () => {
       liveDataStatus = i;
       draw_plot();
     });
