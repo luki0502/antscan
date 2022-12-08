@@ -578,6 +578,8 @@ void clean_exit(Frequency* freq, int freq_counter)
 
 int main(int argc, char **argv)
 {
+    printf("Antenna Scan  Copyright (C) 2022  Lukas Herdeg\n");
+    
     clean();
 
     memset(file_name, '0', sizeof(file_name));
