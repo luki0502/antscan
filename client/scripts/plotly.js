@@ -1,5 +1,6 @@
 let m_data = {};
 let r_data = {};
+let radius = 30;
 
 function init_plot(testFrequency, len) {
     m_data = {};
@@ -88,15 +89,16 @@ function deg2rad(degree) {
 
 function append(azimut, elevation, frequency, gain) {
     gain = parseFloat(gain.toFixed(1));
-    console.info(`rounded gain: ${gain}`);
 
     m_data[`${frequency}`].azimut.push(azimut);
     m_data[`${frequency}`].elevation.push(elevation);
     m_data[`${frequency}`].gain.push(gain);
 
-    var xn = gain * Math.cos(deg2rad(elevation));
+    gain += radius;
+
+    var xn = gain * Math.cos(deg2rad(elevation + 2 * (elevationStart)));
     var yn = 0;
-    var zn = gain * Math.sin(deg2rad(elevation));
+    var zn = gain * Math.sin(deg2rad(elevation + 2 * (elevationStart)));
 
     //Rotation Matrix X
     var x = xn;
@@ -118,89 +120,97 @@ function append(azimut, elevation, frequency, gain) {
     r_data[`${frequency}`].y.push(r_data[`${frequency}`].y[0]);
     r_data[`${frequency}`].z.push(r_data[`${frequency}`].z[0]);
 
-    draw_plot();
+    if(azimut == azimutStart) {
+        draw_plot();
+    }
 }
 
 function draw_plot() {
     var frequency = Object.keys(m_data)[liveDataStatus];
-    var predata = [
-        {
-            r: [],
-            theta: [],
-            mode: 'lines',
-            line: {
-                color: 'darkviolet',
-                shape: 'spline',
-                smoothing: 1.3
+
+    if(document.getElementById('dataModal').classList.contains('show')) {
+        let predata = [
+            {
+                r: [],
+                theta: [],
+                mode: 'lines',
+                line: {
+                    color: 'darkviolet',
+                    shape: 'spline',
+                    smoothing: 1.3
+                },
+                type: 'scatterpolar',
+                hovertemplate: 'Gain: %{r:.1f}<br>Azimut: %{theta}'
+            }
+        ]
+        let prelayout1 = {
+            autosize: false,
+            width: 500,
+            height: 500,
+            title: `Measurement data ${frequency}MHz`,
+            font: {
+                family: 'Arial, sans-serif;',
+                size: 12,
+                color: '#000'
             },
-            type: 'scatterpolar',
-            hovertemplate: 'Gain: %{r:.1f}<br>Azimut: %{theta}'
-        }
-    ]
-    var prelayout1 = {
-        autosize: false,
-        width: 500,
-        height: 500,
-        title: `Measurement data ${frequency}MHz`,
-        font: {
-            family: 'Arial, sans-serif;',
-            size: 12,
-            color: '#000'
-        },
-        showlegend: false,
-        polar: {
-            angularaxis: {
-                direction: "clockwise",
-                dtick: 30
+            showlegend: false,
+            polar: {
+                angularaxis: {
+                    direction: "clockwise",
+                    dtick: 30
+                }
             }
-        }
-    };
-
-    var prelayout2 = {
-        autosize: false,
-        width: 500,
-        height: 500,
-        title: `Measurement data ${frequency}MHz`,
-        font: {
-            family: 'Arial, sans-serif;',
-            size: 12,
-            color: '#000'
-        },
-        showlegend: false,
-        polar: {
-            sector: [0, 180],
-            angularaxis: {
-                direction: "clockwise",
-                dtick: 30
+        };
+        
+        let prelayout2 = {
+            autosize: false,
+            width: 500,
+            height: 500,
+            title: `Measurement data ${frequency}MHz`,
+            font: {
+                family: 'Arial, sans-serif;',
+                size: 12,
+                color: '#000'
+            },
+            showlegend: false,
+            polar: {
+                sector: [0, 180],
+                angularaxis: {
+                    direction: "clockwise",
+                    dtick: 30
+                }
             }
-        }
-    };
+        };
 
-    var predata3d = [
-        {
-            opacity: 0.8,
-            color: 'rgb(300,100,200)',
-            type: 'mesh3d',
-            x: [],
-            y: [],
-            z: [],
-        }
-    ];
+        Plotly.react('dataField', predata, prelayout1);
+        Plotly.react('dataField2', predata, prelayout2);
 
-    Plotly.react('dataField', predata, prelayout1);
-    Plotly.react('dataField2', predata, prelayout2);
-    Plotly.react('dataField3', predata3d);
+        var data1 = built_data1();
+        var layout1 = built_layout1();
+        var data2 = built_data2();
+        var layout2 = built_layout2();
 
-    var data1 = built_data1();
-    var layout1 = built_layout1();
-    var data2 = built_data2();
-    var layout2 = built_layout2();
-    var data3d = built_data3d();
-    var layout3d = {title: `Measurement data ${frequency}MHz`};
+        Plotly.react('dataField', data1, layout1);
+        Plotly.react('dataField2', data2, layout2);
+    } else if(document.getElementById('liveData3dModal').classList.contains('show')) {
+        let predata3d = [
+            {
+                opacity: 0.8,
+                color: 'rgb(300,100,200)',
+                type: 'mesh3d',
+                x: [],
+                y: [],
+                z: [],
+            }
+        ];
 
-    Plotly.react('dataField', data1, layout1);
-    Plotly.react('dataField2', data2, layout2);
-    Plotly.react('dataField3', {data: data3d, layout: layout3d});
+        Plotly.react('dataField3', predata3d);
+
+        var data3d = built_data3d();
+        var layout3d = {title: `Measurement data ${frequency}MHz`};
+
+        Plotly.react('dataField3', {data: data3d, layout: layout3d});
+    }
 }
 
 function built_data1() {
@@ -219,14 +229,22 @@ function built_data1() {
         {
             r: radius,
             theta: theta2,
-            mode: 'lines',
+            mode: design,
             line: {
                 color: 'darkviolet',
                 shape: 'spline',
                 smoothing: 1.3
             },
+            marker: {
+                color: radius,
+                colorscale: 'Portland',
+                showscale: true,
+                colorbar: {
+                    title: "Gain"
+                }
+            },
             type: 'scatterpolar',
-            hovertemplate: 'Gain: %{r:.1f}<br>Azimut: %{theta}'
+            hovertemplate: 'Gain: %{r:.1f}<br>Azimut: %{theta}<extra></extra>'
         }
     ]
 
@@ -249,14 +267,22 @@ function built_data2() {
         {
             r: radius,
             theta: theta2,
-            mode: 'lines',
+            mode: design,
             line: {
                 color: 'darkviolet',
                 shape: 'spline',
                 smoothing: 1.3
             },
+            marker: {
+                color: radius,
+                colorscale: 'Portland',
+                showscale: true,
+                colorbar: {
+                    title: "Gain"
+                }
+            },
             type: 'scatterpolar',
-            hovertemplate: 'Gain: %{r:.1f}<br>Elevation: %{theta}'
+            hovertemplate: 'Gain: %{r:.1f}<br>Elevation: %{theta}<extra></extra>'
         }
     ]
 
@@ -316,13 +342,15 @@ function built_data3d() {
     var frequency = Object.keys(r_data)[liveDataStatus];
     var data = [
         {
-            alphahull: 0,
-            opacity: 0.8,
-            color: 'rgb(300,100,200)',
+            alphahull: 1.7,
+            opacity: 1,
             type: 'mesh3d',
             x: r_data[`${frequency}`].x,
             y: r_data[`${frequency}`].y,
             z: r_data[`${frequency}`].z,
+            intensity: m_data[`${frequency}`].gain,
+            colorscale: 'Portland',
+            hovertemplate: "Gain: %{intensity:.1f}<extra></extra>",
         }
     ];
 

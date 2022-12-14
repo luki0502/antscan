@@ -47,10 +47,8 @@ let liveDataStatus = 0;
 let liveDataStatusEl = 0;
 let liveDataStatusAz = 0;
 let totalTime, totalSeconds, totalMinutes, totalHours, timeLeft, secondsLeft, minutesLeft, hoursLeft;
-
-function make_time(){
-  
-}
+let design = 'lines';
+let azimutStart, elevationStart;
 
 /* Websocket handle */
 let wsocket = null;
@@ -305,6 +303,7 @@ function createDataFrame() {
   document.getElementById('inputFilename').classList.add('is-valid');
 
   let azAngle = document.getElementById('inputAzimutAngle').valueAsNumber;
+  azimutStart = 360 - (azAngle / 2.0);
   document.getElementById('inputAzimutAngle').classList.remove('is-valid', 'is-invalid');
   if(azAngle < 0 || azAngle > 360 || Number.isNaN(azAngle)) {
     document.getElementById('inputAzimutAngle').classList.add('is-invalid');
@@ -328,6 +327,7 @@ function createDataFrame() {
   }
 
   let elStartAngle = document.getElementById('inputElevStartAngle').valueAsNumber;
+  elevationStart = elStartAngle;
   document.getElementById('inputElevStartAngle').classList.remove('is-valid', 'is-invalid');
   if(elStartAngle < -90 || elStartAngle > 90 || Number.isNaN(elStartAngle)) {
     document.getElementById('inputElevStartAngle').classList.add('is-invalid');
@@ -587,6 +587,15 @@ function init_dropdown(frequency, len, elStart, elStop, elRes, azSector, azRes) 
   liveDataStatusAz = azStart;
 }
 
+function changeDesign() {
+  if(design == 'lines') {
+    design = 'markers';
+  } else if(design == 'markers') {
+    design = 'lines';
+  }
+  draw_plot();
+}
+
 /**
  * Start application as soon as DOM is fully loaded
  */
@@ -633,6 +642,12 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('button_home').addEventListener('click', () => {
     sendServerCommand([ServerCommand.CmdHome, 7]); //home
     document.getElementById('button_home').classList.add('disabled');
+  });
+  document.getElementById('button_line').addEventListener('click', () => {
+    changeDesign();
+  });
+  document.getElementById('button_marker').addEventListener('click', () => {
+    changeDesign();
   });
   init_plot();
   /* Finally, connect to weather station */
