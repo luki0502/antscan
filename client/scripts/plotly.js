@@ -120,8 +120,10 @@ function append(azimut, elevation, frequency, gain) {
     r_data[`${frequency}`].y.push(r_data[`${frequency}`].y[0]);
     r_data[`${frequency}`].z.push(r_data[`${frequency}`].z[0]);
 
+    draw_plot();
+
     if(azimut == azimutStart) {
-        draw_plot();
+        draw_plot3d();
     }
 }
 
@@ -142,7 +144,8 @@ function draw_plot() {
                 type: 'scatterpolar',
                 hovertemplate: 'Gain: %{r:.1f}<br>Azimut: %{theta}'
             }
-        ]
+        ];
+        
         let prelayout1 = {
             autosize: false,
             width: 500,
@@ -192,7 +195,13 @@ function draw_plot() {
 
         Plotly.react('dataField', data1, layout1);
         Plotly.react('dataField2', data2, layout2);
-    } else if(document.getElementById('liveData3dModal').classList.contains('show')) {
+    }
+}
+
+function draw_plot3d() {
+    var frequency = Object.keys(m_data)[liveDataStatus];
+    
+    if(document.getElementById('liveData3dModal').classList.contains('show')) {
         let predata3d = [
             {
                 opacity: 0.8,
