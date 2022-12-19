@@ -100,6 +100,8 @@ function wsConnect() {
             }
             document.getElementById('time').classList.replace('btn-outline-danger', 'btn-outline-success');
             document.getElementById('time3d').classList.replace('btn-outline-danger', 'btn-outline-success');
+            draw_plot();
+            draw_plot3d();
           } else if(msg.data == 'Home Position') {
             document.getElementById('button_home').classList.remove('disabled');
           } else if(msg.data == 'Self-Check finished') {
