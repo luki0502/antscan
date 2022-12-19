@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "description": "Antenna gain pattern measurement automatization.",
   "author": {
-    "name": "Michael Wolf",
-    "email": "michael@mictronics.de",
-    "url": "https://www.mictronics.de"
+    "name": "Lukas Herdeg",
   },
   "license": "GPL-v3.0-or-later",
   "private": true,
