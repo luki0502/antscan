@@ -537,7 +537,7 @@ function init_dropdown(frequency, len, elStart, elStop, elRes, azSector, azRes) 
     completeList.appendChild(li);
     document.getElementById(`${frequency[i]}3d`).addEventListener('click', () => {
       liveDataStatus = i;
-      draw_plot();
+      draw_plot3d();
     });
   }
 
