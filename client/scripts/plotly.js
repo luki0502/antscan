@@ -122,8 +122,14 @@ function append(azimut, elevation, frequency, gain) {
 
     draw_plot();
 
-    if(azimut == azimutStart) {
-        draw_plot3d();
+    if(azimutSector == 360) {
+        if(azimut == 175) {
+            draw_plot3d();
+        }
+    } else {
+        if(azimut == azimutStop) {
+            draw_plot3d();
+        }
     }
 }
 
