@@ -48,7 +48,7 @@ let liveDataStatusEl = 0;
 let liveDataStatusAz = 0;
 let totalTime, totalSeconds, totalMinutes, totalHours, timeLeft, secondsLeft, minutesLeft, hoursLeft;
 let design = 'lines';
-let azimutStop, azimutSector, elevationStart;
+let azimutStop, azimutResolution, azimutSector, elevationStart;
 
 /* Websocket handle */
 let wsocket = null;
@@ -315,6 +315,7 @@ function createDataFrame() {
   document.getElementById('inputAzimutAngle').classList.add('is-valid');
 
   let azResolution = document.getElementById('inputAzimutResolution').valueAsNumber;
+  azimutResolution = azResolution;
   document.getElementById('inputAzimutResolution').classList.remove('is-valid', 'is-invalid');
   if(azResolution < 2 || azResolution > 360 || Number.isNaN(azResolution)) {
     document.getElementById('inputAzimutResolution').classList.add('is-invalid');
