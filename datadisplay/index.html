@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <meta charset="UTF-8">
+    <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="./css/styles.css" />
+    <link rel="icon" href="favicon-32x32.png">
+    <script src="./scripts/vendors/papaparse.min.js"></script>
+    <script src="./scripts/vendors/jquery.min.js"></script>
+    <script src="./scripts/vendors/d3.min.js"></script>
+    <script src="./scripts/vendors/bootstrap.bundle.min.js"></script>
+    <script src="./scripts/vendors/plotly-2.14.0.min.js"></script>
+    <script type="text/javascript" src="./scripts/index.js"></script>
+    <title>Data Display</title>
+    
+</head>
+<body>
+  <div class="container text-center" style="padding:10px 10px;">
+    <h1>Data Display</h1><br><br>
+
+	<div class="row">
+		<form class="form-inline">
+			<div class="form-group">
+			    <label for="files">Upload a CSV formatted file:</label><br><br>
+			    <input type="file" id="files"  class="form-control" accept=".csv" required /><br><br>
+			</div>
+			<div class="form-group">
+			    <button type="button" id="submit-file" class="btn btn-primary" onclick="parseFile()">Upload File</button>
+			</div>
+            <div id="information">Please upload file!</div>
+		</form>
+	</div>
+    <div class="row">
+        <br>
+        <br>
+    </div>
+    <div class="row">
+    <div class="col">
+        <button type="button" class="btn btn-primary disabled" id="button_data" data-bs-toggle="modal"
+            data-bs-target="#dataModal">
+            Data 2D
+        </button>
+
+        <div class="modal fade" id="dataModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+            aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog modal-fullscreen">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="staticBackdropLabel">Data 2D</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="dropdown col">
+                                <div class="row">
+                                    <br>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        <button class="btn btn-primary dropdown-toggle" type="button"
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                            Elevation
+                                        </button>
+                                        <ul class="dropdown-menu" id="elevationDropdown">
+
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <br>
+                                    <br>
+                                    <br>
+                                    <br>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        <button class="btn btn-primary dropdown-toggle" type="button"
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                            Azimut
+                                        </button>
+                                        <ul class="dropdown-menu" id="azimutDropdown">
+
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <br>
+                                    <br>
+                                    <br>
+                                    <br>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        <button class="btn btn-primary dropdown-toggle" type="button"
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                            Design
+                                        </button>
+                                        <ul class="dropdown-menu" id="designDropdown">
+                                            <li><button class="dropdown-item" type="button" id="button_line">Line</button></li>
+                                            <li><button class="dropdown-item" type="button" id="button_marker">Marker</button></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col" id="dataField"></div>
+                            <div class="col" id="dataField2"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <button type="button" class="btn btn-primary disabled" id="button_data3d" data-bs-toggle="modal"
+            data-bs-target="#liveData3dModal">
+            Data 3D
+        </button>
+
+        <div class="modal fade" id="liveData3dModal" tabindex="-1" aria-labelledby="liveData3dModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-fullscreen">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="liveData3dModalLabel">Data 3D</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <br>
+                            <div class="col" id="dataField3"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+</body>
+</html>
