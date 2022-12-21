@@ -30,7 +30,7 @@ function init_dropdown(keys) {
     var elStop = parseFloat(keys[keys.length - 1]);
     var elRes = Math.abs(parseFloat(keys[0]) - parseFloat(keys[1]));
 
-    for(i = elStart; i <= elStop; i+=elRes) {
+    for(let i = elStart; i <= elStop; i+=elRes) {
         var li = document.createElement("li");
         var button = document.createElement("button");
         button.classList.add("dropdown-item");
@@ -55,7 +55,7 @@ function init_dropdown(keys) {
     var azStop = parseFloat(pan[pan.length - 2]);
     var azRes = Math.abs(parseFloat(pan[0]) - parseFloat(pan[1]));
 
-    for(i = azStart; i <= azStop; i+=azRes) {
+    for(let i = azStart; i <= azStop; i+=azRes) {
         var li = document.createElement("li");
         var button = document.createElement("button");
         button.classList.add("dropdown-item");
