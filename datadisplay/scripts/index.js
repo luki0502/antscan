@@ -9,9 +9,12 @@ var dataStatusEl = 0;
 var dataStatusAz = 0;
 var design = 'lines';
 var frequency = 0;
-var keys;
+var keys, elStart, azStart, elRes, azRes;
 
 function parseFile() {
+    csv_data = {};
+    m_data = {};
+    r_data = {};
     var file = document.querySelector('input').files[0];
     Papa.parse(file, {
         complete: function(csvdata) {
@@ -26,9 +29,9 @@ function init_dropdown(keys) {
     while(completeList.childElementCount != 0) {
         completeList.firstChild.remove();
     }
-    var elStart = parseFloat(keys[0]);
+    elStart = parseFloat(keys[0]);
     var elStop = parseFloat(keys[keys.length - 1]);
-    var elRes = Math.abs(parseFloat(keys[0]) - parseFloat(keys[1]));
+    elRes = Math.abs(parseFloat(keys[0]) - parseFloat(keys[1]));
 
     for(let i = elStart; i <= elStop; i+=elRes) {
         var li = document.createElement("li");
@@ -51,9 +54,9 @@ function init_dropdown(keys) {
     while(completeList.childElementCount != 0) {
         completeList.firstChild.remove();
     }
-    var azStart = parseFloat(pan[0]);
+    azStart = parseFloat(pan[0]);
     var azStop = parseFloat(pan[pan.length - 2]);
-    var azRes = Math.abs(parseFloat(pan[0]) - parseFloat(pan[1]));
+    azRes = Math.abs(parseFloat(pan[0]) - parseFloat(pan[1]));
 
     for(let i = azStart; i <= azStop; i+=azRes) {
         var li = document.createElement("li");
@@ -70,6 +73,13 @@ function init_dropdown(keys) {
             draw_plot();
         })
     }
+
+    document.getElementById("button_data").classList.remove("disabled");
+    if(document.getElementById('elevationDropdown').childElementCount > 1) {
+        document.getElementById('button_data3d').classList.remove('disabled');
+    } else {
+        document.getElementById('button_data3d').classList.add('disabled');
+    }
 }
 
 function draw_plot() {
@@ -78,8 +88,15 @@ function draw_plot() {
     var data2 = built_data2();
     var layout2 = built_layout2();
 
-    Plotly.newPlot('dataField', data1, layout1);
-    Plotly.newPlot('dataField2', data2, layout2);
+    Plotly.react('dataField', data1, layout1);
+    Plotly.react('dataField2', data2, layout2);
+}
+
+function draw_plot3d() {
+    var data3d = built_data3d();
+    var layout3d = {title: `${frequency}MHz`};
+
+    Plotly.react('dataField3', {data: data3d, layout: layout3d});
 }
 
 function built_data1() {
@@ -203,11 +220,75 @@ function built_layout2() {
     return layout;
 }
 
+function deg2rad(degree) {
+    var rad = degree * (Math.PI / 180);
+    return rad;
+}
+
+function built_data3d() {
+    r_data = {
+        x: [],
+        y: [],
+        z: []
+    };
+    var radius = 30;
+    var az = azStart; 
+    var el = elStart;
+    var counter = 0;
+    var gain2;
+
+    for(i = 0; i < keys.length; i++) {
+        az = azStart;
+        for(j = 0; j < pan.length - 1; j ++) {
+            gain2 = radius + parseFloat(m_data.gain[counter]);
+
+            var xn = gain2 * Math.cos(deg2rad(el - 2 * elStart));
+            var yn = 0;
+            var zn = gain2 * Math.sin(deg2rad(el - 2 * elStart));
+        
+            var x = xn;
+            var y = Math.cos(deg2rad(az)) * yn - Math.sin(deg2rad(az)) * zn;
+            var z = Math.sin(deg2rad(az)) * yn + Math.cos(deg2rad(az)) * zn;
+        
+            r_data.x.push(x);
+            r_data.y.push(y);
+            r_data.z.push(z);
+        
+            az += azRes;
+            counter += 1;
+        }
+        el += elRes;
+    }
+
+    var data = [
+        {
+            alphahull: 1.7,
+            opacity: 1,
+            type: 'mesh3d',
+            x: r_data.x,
+            y: r_data.y,
+            z: r_data.z,
+            intensity: m_data.gain,
+            colorscale: 'Portland',
+            hovertemplate: "Gain: %{intensity:.1f}<extra></extra>",
+        }
+    ];
+
+    return data;
+}
+
 function displayData(results){
     var data = results.data;
+    pan = [];
+    azimut = [];
+    elevation = [];
+    gain = [];
+    dataStatusEl = 0;
+    dataStatusAz = 0;
+    design = 'lines';
+    frequency = 0;
+    keys = [];
 
-    document.getElementById("button_data").classList.remove("disabled");
-    document.getElementById("button_data3d").classList.remove("disabled");
     document.getElementById("information").innerText = "Calculating ...";
 
     for(i = 2; i < data.length - 1; i++) {
@@ -228,9 +309,9 @@ function displayData(results){
             }
         }
         for(l = 0; l < pan.length - 1; l++) { //Walk through array of azimut angle to get the same length for azimut and elevation array
-                elevation.push(parseFloat(keys[i]));
+            elevation.push(parseFloat(keys[i]));
         } 
-        for(m = 0; m < pan.length - 1; m++){
+        for(m = 0; m < pan.length - 1; m++) {
             gain.push(csv_data[`${keys[i]}`][m + 1]);
         }
     }
@@ -243,6 +324,7 @@ function displayData(results){
 
     init_dropdown(keys);
     draw_plot();
+    draw_plot3d();
 
     document.getElementById("information").innerText = "Done!";
 }
