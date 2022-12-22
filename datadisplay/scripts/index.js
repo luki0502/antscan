@@ -83,13 +83,19 @@ function init_dropdown(keys) {
 }
 
 function draw_plot() {
+    document.getElementById('dataField').innerHTML = "";
+    document.getElementById('dataField2').innerHTML = "";
+    document.getElementById('button_azimut').classList.add('disabled');
     var data1 = built_data1();
     var layout1 = built_layout1();
-    var data2 = built_data2();
-    var layout2 = built_layout2();
+    Plotly.newPlot('dataField', data1, layout1);
 
-    Plotly.react('dataField', data1, layout1);
-    Plotly.react('dataField2', data2, layout2);
+    if(document.getElementById('elevationDropdown').childElementCount > 1) {
+        document.getElementById('button_azimut').classList.remove('disabled');
+        var data2 = built_data2();
+        var layout2 = built_layout2();
+        Plotly.newPlot('dataField2', data2, layout2);
+    }
 }
 
 function draw_plot3d() {
@@ -324,7 +330,9 @@ function displayData(results){
 
     init_dropdown(keys);
     draw_plot();
-    draw_plot3d();
+    if(document.getElementById('elevationDropdown').childElementCount > 1) {
+        draw_plot3d();
+    }
 
     document.getElementById("information").innerText = "Done!";
 }
