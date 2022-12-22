@@ -20,13 +20,13 @@
     <h1>Data Display</h1><br><br>
 
 	<div class="row">
-		<form class="form-inline">
+		<form class="form-inline" onsubmit="return false">
 			<div class="form-group">
 			    <label for="files">Upload a CSV formatted file:</label><br><br>
 			    <input type="file" id="files"  class="form-control" accept=".csv" required /><br><br>
 			</div>
 			<div class="form-group">
-			    <button type="button" id="submit-file" class="btn btn-primary" onclick="parseFile()">Upload File</button>
+			    <button type="submit" id="submit-file" class="btn btn-primary" onclick="parseFile()">Upload File</button>
 			</div>
             <div id="information">Please upload file!</div>
 		</form>
