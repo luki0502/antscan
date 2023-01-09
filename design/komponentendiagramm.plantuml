@@ -1,8 +1,8 @@
 @startuml Komponentendiagramm
 
-[C] as C
-[User Interface] as HTML
-[JavaScript] as JS
+[antscan.c] as C
+[userinterface.html] as HTML
+[logic.js] as JS
 [Head] as SK
 [Receiver] as ME
 interface "WebSocket" as WS
