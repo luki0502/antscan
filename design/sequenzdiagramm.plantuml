@@ -1,9 +1,9 @@
 @startuml Sequenzdiagramm
 
 actor user
-participant HTML
-participant JavaScript as JS
-participant C
+participant userinterface.html as HTML
+participant logic.js as JS
+participant antscan.c as C
 participant Receiver
 participant Head
 
