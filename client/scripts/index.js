@@ -317,7 +317,7 @@ function createDataFrame() {
   let azResolution = document.getElementById('inputAzimutResolution').valueAsNumber;
   azimutResolution = azResolution;
   document.getElementById('inputAzimutResolution').classList.remove('is-valid', 'is-invalid');
-  if(azResolution < 2 || azResolution > 360 || Number.isNaN(azResolution)) {
+  if(azResolution < 2 || azResolution > 359 || Number.isNaN(azResolution)) {
     document.getElementById('inputAzimutResolution').classList.add('is-invalid');
     return false;
   }
