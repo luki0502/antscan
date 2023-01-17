@@ -207,7 +207,7 @@ function draw_plot() {
 function draw_plot3d() {
     var frequency = Object.keys(m_data)[liveDataStatus];
     
-    if(document.getElementById('liveData3dModal').classList.contains('show')) {
+    if(document.getElementById('liveData3dModal').classList.contains('show') || finish == 1) {
         let predata3d = [
             {
                 opacity: 0.8,

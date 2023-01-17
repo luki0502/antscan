@@ -49,6 +49,7 @@ let liveDataStatusAz = 0;
 let totalTime, totalSeconds, totalMinutes, totalHours, timeLeft, secondsLeft, minutesLeft, hoursLeft;
 let design = 'lines';
 let azimutStop, azimutResolution, azimutSector, elevationStart;
+let finish = 0;
 
 /* Websocket handle */
 let wsocket = null;
@@ -85,6 +86,7 @@ function wsConnect() {
         case 'success':
           showToast(msg.data, ToastType.Success);
           if(msg.data == 'Scan process finished.') {
+            finish = 1;
             if(totalMinutes < 10 && totalSeconds < 10) {
               document.getElementById('time').innerHTML = `Total Time: ${totalHours}:0${totalMinutes}:0${totalSeconds}`;
               document.getElementById('time3d').innerHTML = `Total Time: ${totalHours}:0${totalMinutes}:0${totalSeconds}`;
@@ -101,7 +103,9 @@ function wsConnect() {
             document.getElementById('time').classList.replace('btn-outline-danger', 'btn-outline-success');
             document.getElementById('time3d').classList.replace('btn-outline-danger', 'btn-outline-success');
             draw_plot();
-            draw_plot3d();
+            if(!document.getElementById('liveData3dModal').classList.contains('show')) {
+              draw_plot3d();
+            }
           } else if(msg.data == 'Home Position') {
             document.getElementById('button_home').classList.remove('disabled');
           } else if(msg.data == 'Self-Check finished') {
@@ -606,6 +610,7 @@ function changeDesign() {
 document.addEventListener('DOMContentLoaded', () => {
   /* Add click event listeners to each button */
   document.getElementById('button_calib').addEventListener('click', () => {
+    finish = 0;
     const data = createDataFrame();
     document.getElementById('progress').setAttribute("style", "width: 0%");
     document.getElementById('progress').innerHTML = "0%";
