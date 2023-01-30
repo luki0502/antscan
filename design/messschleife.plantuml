@@ -1,0 +1,13 @@
+@startuml Messschleife
+
+start
+repeat
+:set pan position;
+repeat
+:set tilt position;
+#Green:measure;
+repeat while (more tilt angles?)
+repeat while (more pan angles?)
+stop
+
+@enduml
