@@ -1,11 +1,12 @@
 @startuml Zustandsdiagramm
 
 [*] --> Stoped
-Stoped --> Calibrated : "Calibrate"
+Stoped -l-> Calibrated : "Calibrate"
 Stoped --> HeadCommands : "Head"
 Calibrated --> Running : "Start"
 Running --> Paused : "Pause"
 Running --> Stoped : "Stop"
+Paused -d-> Stoped : "Stop"
 Running --> Stoped : "Scan done"
 Paused --> Running : "Pause"
 Stoped --> LiveData : "Live Data"
@@ -14,6 +15,7 @@ Paused --> LiveData : "Live Data"
 LiveData --> Stoped
 LiveData --> Running
 LiveData --> Paused
+HeadCommands --> Stoped
 
 Stoped : data input
 Stoped : disable button Start
