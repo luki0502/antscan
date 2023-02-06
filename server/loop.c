@@ -109,8 +109,8 @@ void measurement_loop()
                     #ifdef REAL
                     double val = get_data(freq[d].frequency) + freq[d].reference_gain;
                     #else
-                    //double val = (rand() % 20000) / 20000.0;
-                    double val = 3;
+                    double val = (rand() % 20000) / 20000.0;
+                    //double val = 3;
                     #endif
 
                     fprintf(freq[d].file_stream, "%.01lf;", val);
