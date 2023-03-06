@@ -8,6 +8,8 @@ Required Libraries for building:
 * libpthread
 * librsvisa https://www.rohde-schwarz.com/de/applikationen/r-s-visa-application-note_56280-148812.html
 
---> make all
-start the binary file
+--> make all,
+start the binary file,
 start html file in a http server and open it in your browser
+
+!Today there is an error in memory, software can only run in debugger, not in terminal!
